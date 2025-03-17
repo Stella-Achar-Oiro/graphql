@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="page">
+        <div class="container">
+            <h1>Login</h1>
+            <div id="error-message" class="error hidden"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile-page" class="page hidden">
+        <header>
+            <div class="container">
+                <h1>My Profile</h1>
+                <button id="logout-btn" class="btn">Logout</button>
+            </div>
+        </header>
+        
+        <main class="container">
+            <!-- Section 1: Basic User Info -->
+            <section id="user-info" class="profile-section">
+                <h2>User Information</h2>
+                <div class="section-content">
+                    <div id="user-basic-info">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Section 2: XP Progress -->
+            <section id="xp-progress" class="profile-section">
+                <h2>XP Progress</h2>
+                <div class="section-content">
+                    <div id="xp-info">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Section 3: Projects/Audits Overview -->
+            <section id="projects-overview" class="profile-section">
+                <h2>Projects Overview</h2>
+                <div class="section-content">
+                    <div id="projects-info">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Section 4: Statistics Graphs -->
+            <section id="statistics" class="profile-section">
+                <h2>Statistics</h2>
+                <div class="section-content">
+                    <div id="graph-container">
+                        <div id="graph1" class="graph">
+                            <h3>XP per Project</h3>
+                            <svg id="xp-per-project-graph" width="100%" height="400"></svg>
+                        </div>
+                        <div id="graph2" class="graph">
+                            <h3>Project Pass/Fail Ratio</h3>
+                            <svg id="pass-fail-graph" width="100%" height="400"></svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="graphql.js"></script>
+    <script src="charts.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
