@@ -1,181 +1,375 @@
-/* General Styles */
-* {
+/* Modern styling for GraphQL Profile */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --success-color: #2ecc71;
+    --error-color: #e74c3c;
+    --background-color: #f5f7fa;
+    --card-color: #ffffff;
+    --text-color: #333333;
+    --text-light: #777777;
+    --border-color: #e1e4e8;
+  }
+  
+  * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-}
-
-body {
+  }
+  
+  body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
-    color: #333;
-    background-color: #f5f7fa;
-}
-
-.container {
+  }
+  
+  .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Header Styles */
-header {
-    background-color: #2c3e50;
+    padding: 20px;
+  }
+  
+  /* Login Page */
+  #login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--secondary-color);
+  }
+  
+  #login-page .container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+  }
+  
+  #login-page h1 {
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    text-align: center;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: border-color 0.3s;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  
+  .btn {
+    background-color: var(--primary-color);
     color: white;
-    padding: 20px 0;
-    margin-bottom: 30px;
-}
-
-header .container {
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+  }
+  
+  #login-form .btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .error {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--error-color);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  
+  /* Profile Page */
+  header {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-/* Button Styles */
-.btn {
-    padding: 10px 15px;
-    background-color: #3498db;
+  }
+  
+  header h1 {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  #logout-btn {
+    background-color: transparent;
+    border: 2px solid white;
+  }
+  
+  #logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  main.container {
+    padding-top: 30px;
+    padding-bottom: 50px;
+  }
+  
+  /* Profile Sections */
+  .profile-section {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .profile-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-section h2 {
+    background-color: var(--primary-color);
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.btn:hover {
-    background-color: #2980b9;
-}
-
-/* Page Styles */
-.page {
-    min-height: 100vh;
+    padding: 15px 20px;
+    margin: 0;
+    font-size: 20px;
+  }
+  
+  .section-content {
+    padding: 20px;
+  }
+  
+  /* User Information */
+  .user-profile {
     display: flex;
     flex-direction: column;
-}
-
-#login-page {
-    justify-content: center;
-    align-items: center;
-    background-color: #ecf0f1;
-}
-
-#login-page .container {
-    background-color: white;
-    padding: 30px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
+  }
+  
+  .user-profile h3 {
+    margin-bottom: 15px;
+    color: var(--secondary-color);
+    font-size: 22px;
+  }
+  
+  .user-profile p {
+    margin-bottom: 10px;
+  }
+  
+  .user-profile strong {
+    color: var(--secondary-color);
     font-weight: 600;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.error {
-    background-color: #e74c3c;
-    color: white;
-    padding: 10px;
-    border-radius: 4px;
+  }
+  
+  /* XP Information */
+  .xp-total {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+  }
+  
+  .xp-recent {
     margin-bottom: 20px;
-}
-
-/* Profile Section Styles */
-.profile-section {
-    background-color: white;
-    margin-bottom: 30px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: var(--text-light);
+  }
+  
+  .xp-list {
+    list-style: none;
+  }
+  
+  .xp-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .xp-list li:last-child {
+    border-bottom: none;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background-color: #eee;
+    border-radius: 4px;
     overflow: hidden;
-}
-
-.profile-section h2 {
-    padding: 15px 20px;
-    background-color: #3498db;
+    margin-top: 8px;
+  }
+  
+  .progress {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 4px;
+  }
+  
+  /* Projects Information */
+  .projects-overview {
+    margin-bottom: 20px;
+  }
+  
+  .projects-overview p {
+    margin-bottom: 12px;
+  }
+  
+  .pass-rate {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: var(--success-color);
     color: white;
-}
-
-.section-content {
-    padding: 20px;
-}
-
-/* Statistics Section */
-#graph-container {
+    font-weight: bold;
+  }
+  
+  .project-categories {
+    margin-bottom: 25px;
+  }
+  
+  .project-categories h4,
+  .project-recent h4 {
+    margin-bottom: 12px;
+    color: var(--secondary-color);
+  }
+  
+  .project-recent-list {
+    list-style: none;
+  }
+  
+  .project-recent-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .project-recent-list li:last-child {
+    border-bottom: none;
+  }
+  
+  .project-name {
+    font-weight: 500;
+  }
+  
+  .project-meta {
+    text-align: right;
+  }
+  
+  .project-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .status-passed {
+    background-color: var(--success-color);
+    color: white;
+  }
+  
+  .status-failed {
+    background-color: var(--error-color);
+    color: white;
+  }
+  
+  .project-date {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  
+  /* Graph Section */
+  #graph-container {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
-}
-
-@media (min-width: 768px) {
-    #graph-container {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.graph {
+  }
+  
+  .graph {
     background-color: white;
-    border-radius: 5px;
-    padding: 15px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.graph h3 {
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .graph h3 {
     margin-bottom: 15px;
+    color: var(--secondary-color);
+    font-size: 18px;
     text-align: center;
-    color: #2c3e50;
-}
-
-/* SVG Graph Styles */
-svg {
+  }
+  
+  svg {
+    max-width: 100%;
+    height: auto;
     display: block;
-    margin: 0 auto;
-}
-
-.bar {
-    transition: opacity 0.3s;
-}
-
-.bar:hover {
-    opacity: 0.8;
-}
-
-.pie-segment {
-    transition: transform 0.3s;
-}
-
-.pie-segment:hover {
-    transform: translateX(10px);
-}
-
-.tooltip {
+  }
+  
+  /* SVG tooltip */
+  .tooltip {
     position: absolute;
-    padding: 8px;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
+    padding: 8px 12px;
     border-radius: 4px;
-    pointer-events: none;
     font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 200px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  }
+  
+  /* Utility classes */
+  .hidden {
+    display: none !important;
+  }
+  
+  /* Media queries for responsiveness */
+  @media (min-width: 768px) {
+    #graph-container {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .section-content {
+      padding: 15px;
+    }
+    
+    header .container {
+      flex-direction: column;
+    }
+    
+    header h1 {
+      margin-bottom: 10px;
+    }
+  }

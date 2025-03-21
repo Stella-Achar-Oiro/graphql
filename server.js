@@ -9,7 +9,7 @@ app.use(express.static(path.join(__dirname)));
 
 // Proxy API requests to your school's domain
 app.use('/api', createProxyMiddleware({
-  target: 'https://01.kood.tech',
+  target: 'https://learn.zone01kisumu.ke',
   changeOrigin: true,
   pathRewrite: {
     '^/api': '/api', // no rewrite needed in this case

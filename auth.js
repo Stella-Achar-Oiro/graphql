@@ -1,6 +1,6 @@
 // Authentication Module
 const Auth = (() => {
-    const authEndpoint = 'https://01.kood.tech/api/auth/signin';
+    const authEndpoint = 'https://learn.zone01kisumu.ke/api/auth/signin';
     const TOKEN_KEY = 'auth_token';
     
     // Function to encode credentials in base64 for Basic Auth
@@ -36,7 +36,7 @@ const Auth = (() => {
                 try {
                     const errorData = await response.json();
                     console.log("Error data:", errorData);
-                    throw new Error(errorData.message || 'Invalid credentials');
+                    throw new Error(errorData.error || errorData.message || 'Invalid credentials');
                 } catch (jsonError) {
                     // If parsing JSON fails, throw a more general error
                     console.log("Could not parse error JSON:", jsonError);
@@ -44,15 +44,43 @@ const Auth = (() => {
                 }
             }
             
-            const data = await response.json();
-            console.log("Successful response:", data);
+            // Get the token from the response
+            let responseText = await response.text();
+            console.log("Successful response:", responseText);
+            
+            // The token is returned as a JSON string with quotes, we need to parse it
+            try {
+                // Try to parse as JSON first (it might be a string in quotes)
+                let parsedToken = JSON.parse(responseText);
+                
+                // If parsed successfully and it's a string, use that
+                if (typeof parsedToken === 'string') {
+                    responseText = parsedToken;
+                }
+                // If it's an object with a token property, use that
+                else if (parsedToken && parsedToken.token) {
+                    responseText = parsedToken.token;
+                }
+            } catch (e) {
+                // If parsing fails, it's already a raw string
+                console.log("Token is already a raw string");
+            }
+            
+            // Final token value
+            const token = responseText;
+            
+            // Check if we received a valid token
+            if (!token || token.split('.').length !== 3) {
+                console.error("Invalid JWT format:", token);
+                throw new Error("Invalid token format received from server");
+            }
             
             // Store the JWT token
-            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(TOKEN_KEY, token);
             
             return {
                 success: true,
-                token: data.token
+                token: token
             };
         } catch (error) {
             console.error('Login error:', error);
@@ -63,11 +91,19 @@ const Auth = (() => {
         }
     };
     
-    // Rest of the code remains the same...
-    
     // Function to get the JWT token
     const getToken = () => {
-        return localStorage.getItem(TOKEN_KEY);
+        const token = localStorage.getItem(TOKEN_KEY);
+        
+        // Check if token exists and has valid format
+        if (!token || token.split('.').length !== 3) {
+            console.warn("Invalid token format in storage");
+            // Clear invalid token
+            localStorage.removeItem(TOKEN_KEY);
+            return null;
+        }
+        
+        return token;
     };
     
     // Function to check if user is authenticated
@@ -75,9 +111,26 @@ const Auth = (() => {
         const token = getToken();
         if (!token) return false;
         
-        // Basic validation (you could add JWT expiration check)
-        // For a real app, you'd verify the token hasn't expired
-        return true;
+        try {
+            // Parse the JWT parts
+            const parts = token.split('.');
+            if (parts.length !== 3) return false;
+            
+            // Get the payload
+            const payload = JSON.parse(atob(parts[1]));
+            
+            // Check if token is expired
+            if (payload.exp && payload.exp * 1000 < Date.now()) {
+                console.warn("Token expired");
+                localStorage.removeItem(TOKEN_KEY);
+                return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error("Error validating token:", error);
+            return false;
+        }
     };
     
     // Function to decode JWT and get user ID

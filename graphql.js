@@ -1,7 +1,7 @@
 // GraphQL API Module
 const GraphQL = (() => {
-    // Replace with your actual domain
-    const graphqlEndpoint = `https://01.kood.tech/api/graphql-engine/v1/graphql`;
+    // GraphQL endpoint
+    const graphqlEndpoint = `https://learn.zone01kisumu.ke/api/graphql-engine/v1/graphql`;
     
     // Function to execute a GraphQL query
     const executeQuery = async (query, variables = {}) => {
@@ -9,6 +9,13 @@ const GraphQL = (() => {
         if (!token) {
             throw new Error('Authentication required');
         }
+        
+        // Log token format for debugging
+        console.log("Token format check:", {
+            token: token.substring(0, 10) + "...", // Only show beginning for security
+            parts: token.split('.').length,
+            isValid: token.split('.').length === 3
+        });
         
         try {
             const response = await fetch(graphqlEndpoint, {
@@ -23,22 +30,43 @@ const GraphQL = (() => {
                 })
             });
             
+            // Log more detailed response info for debugging
+            console.log("GraphQL response status:", response.status);
+            
             if (!response.ok) {
-                throw new Error('GraphQL request failed');
+                const errorText = await response.text();
+                console.error("GraphQL error response:", errorText);
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    throw new Error(errorJson.error || errorJson.message || 'GraphQL request failed');
+                } catch (e) {
+                    throw new Error(`GraphQL request failed with status: ${response.status}`);
+                }
             }
             
             const data = await response.json();
             
             if (data.errors) {
+                console.error("GraphQL errors:", data.errors);
                 throw new Error(data.errors[0].message);
             }
             
             return data.data;
         } catch (error) {
             console.error('GraphQL error:', error);
+            
+            // Handle token-related errors
+            if (error.message.includes('JWT') || error.message.includes('token')) {
+                // Clear invalid token
+                Auth.logout();
+                throw new Error('Authentication token is invalid. Please log in again.');
+            }
+            
             throw error;
         }
     };
+    
+    // The rest of your code remains the same...
     
     // Function to fetch user basic info
     const getUserInfo = async () => {
@@ -173,15 +201,20 @@ const GraphQL = (() => {
             }
         `;
         
-        const [xpData, projectsData] = await Promise.all([
-            executeQuery(xpQuery),
-            executeQuery(projectsQuery)
-        ]);
-        
-        return {
-            xpData,
-            projectsData
-        };
+        try {
+            const [xpData, projectsData] = await Promise.all([
+                executeQuery(xpQuery),
+                executeQuery(projectsQuery)
+            ]);
+            
+            return {
+                xpData,
+                projectsData
+            };
+        } catch (error) {
+            console.error("Error fetching graph data:", error);
+            throw error;
+        }
     };
     
     return {
