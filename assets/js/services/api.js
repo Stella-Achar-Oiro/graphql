@@ -5,7 +5,9 @@
 
 const API = (() => {
     // Constants
-    const GRAPHQL_ENDPOINT = 'https://learn.zone01kisumu.ke/api/graphql-engine/v1/graphql';
+    const GRAPHQL_ENDPOINT = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'https://learn.zone01kisumu.ke/api/graphql-engine/v1/graphql' 
+        : 'https://learn.zone01kisumu.ke/api/graphql-engine/v1/graphql';
     
     /**
      * Execute a GraphQL query
@@ -90,7 +92,7 @@ const API = (() => {
     const getUserXP = async () => {
         const query = `
             {
-                transaction(where: {type: {_eq: "xp"}}) {
+                transaction(where: {type: {_eq: "xp"}}, order_by: {createdAt: desc}) {
                     id
                     amount
                     objectId

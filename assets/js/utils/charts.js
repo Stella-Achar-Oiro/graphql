@@ -75,6 +75,18 @@ const ChartUtils = (() => {
         // Clear any existing content
         svg.innerHTML = '';
         
+        // If there's no data, show a message
+        if (!data || data.length === 0) {
+            const noData = createSVGElement('text');
+            noData.setAttribute('x', svg.clientWidth / 2);
+            noData.setAttribute('y', svg.clientHeight / 2);
+            noData.setAttribute('text-anchor', 'middle');
+            noData.setAttribute('fill', getThemeColors().text);
+            noData.textContent = 'No XP data available';
+            svg.appendChild(noData);
+            return;
+        }
+        
         // Set dimensions
         const width = svg.clientWidth || 500;
         const height = svg.clientHeight || 300;
@@ -85,7 +97,7 @@ const ChartUtils = (() => {
         // Get theme colors
         const colors = getThemeColors();
         
-        // Group projects and sum XP
+        // Group projects and sum XP - ensure numeric values
         const projectXp = data.reduce((acc, item) => {
             const pathParts = item.path.split('/');
             const projectName = pathParts[pathParts.length - 1];
@@ -93,7 +105,7 @@ const ChartUtils = (() => {
             if (!acc[projectName]) {
                 acc[projectName] = 0;
             }
-            acc[projectName] += item.amount;
+            acc[projectName] += Number(item.amount) || 0;
             return acc;
         }, {});
         
@@ -102,6 +114,18 @@ const ChartUtils = (() => {
             .map(([name, xp]) => ({ name, xp }))
             .sort((a, b) => b.xp - a.xp)
             .slice(0, 10); // Limit to top 10
+        
+        // If after processing we have no projects, show message
+        if (projectData.length === 0) {
+            const noData = createSVGElement('text');
+            noData.setAttribute('x', width / 2);
+            noData.setAttribute('y', height / 2);
+            noData.setAttribute('text-anchor', 'middle');
+            noData.setAttribute('fill', colors.text);
+            noData.textContent = 'No project XP data available';
+            svg.appendChild(noData);
+            return;
+        }
         
         // Create scaling functions
         const xScale = index => margin.left + (index * (chartWidth / projectData.length)) + (chartWidth / projectData.length / 2);
@@ -131,7 +155,7 @@ const ChartUtils = (() => {
             bar.addEventListener('mousemove', (e) => {
                 tooltip.show(`
                     <strong>${project.name}</strong><br>
-                    XP: ${project.xp.toLocaleString()}
+                    XP: ${Helpers.formatXpAsFileSize(project.xp)}
                 `, e.clientX, e.clientY);
             });
             bar.addEventListener('mouseout', tooltip.hide);
@@ -353,6 +377,18 @@ const ChartUtils = (() => {
         // Clear any existing content
         svg.innerHTML = '';
         
+        // If there's no data, show a message
+        if (!data || data.length === 0) {
+            const noData = createSVGElement('text');
+            noData.setAttribute('x', svg.clientWidth / 2);
+            noData.setAttribute('y', svg.clientHeight / 2);
+            noData.setAttribute('text-anchor', 'middle');
+            noData.setAttribute('fill', getThemeColors().text);
+            noData.textContent = 'No XP timeline data available';
+            svg.appendChild(noData);
+            return;
+        }
+        
         // Set dimensions
         const width = svg.clientWidth || 500;
         const height = svg.clientHeight || 300;
@@ -543,7 +579,7 @@ const ChartUtils = (() => {
             label.setAttribute('dominant-baseline', 'middle');
             label.setAttribute('font-size', '12px');
             label.setAttribute('fill', colors.text);
-            label.textContent = value.toLocaleString();
+            label.textContent = Helpers.formatXpAsFileSize(value);
             
             chartGroup.appendChild(label);
             

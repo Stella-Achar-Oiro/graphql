@@ -174,7 +174,7 @@ const SkillsComponent = (() => {
                 <div class="skills-overview">
                     <div class="skills-overview-header">
                         <h2 class="skills-title">Skill Assessment</h2>
-                        <p class="skills-subtitle">Based on ${totalXP.toLocaleString()} XP across ${projectsData.progress.length} projects</p>
+                        <p class="skills-subtitle">Based on ${Helpers.formatXpAsFileSize(totalXP)} across ${projectsData.progress.length} projects</p>
                     </div>
                     
                     <div class="skills-summary">
@@ -208,7 +208,7 @@ const SkillsComponent = (() => {
                                 <div class="skill-progress ${skill.level}" style="width: ${Math.min(100, Math.max(5, parseFloat(skill.percentage)))}%"></div>
                             </div>
                             <div class="skill-stats">
-                                <div>${skill.xp.toLocaleString()} XP</div>
+                                <div>${Helpers.formatXpAsFileSize(skill.xp)}</div>
                                 <div>${skill.percentage}% of total</div>
                             </div>
                             ${skill.projects > 0 ? `

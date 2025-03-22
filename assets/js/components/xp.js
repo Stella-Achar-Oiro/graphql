@@ -10,16 +10,19 @@ const XPComponent = (() => {
      * @returns {string} HTML content for the XP section
      */
     const render = (xpData) => {
-        const transactions = xpData.transaction;
+        const transactions = xpData.transaction || [];
         
         if (!transactions || transactions.length === 0) {
             return '<div class="error-message">No XP data found</div>';
         }
         
-        // Calculate total XP
-        const totalXP = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+        // Calculate total XP - ensure we're getting valid numeric values
+        let totalXP = transactions.reduce((sum, transaction) => {
+            const amount = Number(transaction.amount) || 0;
+            return sum + amount;
+        }, 0);
         
-        // Format total XP using the helper function
+        // Format total XP using the helper function for file size display
         const formattedTotalXP = Helpers.formatXpAsFileSize(totalXP);
         
         // Group XP by path (project)
@@ -28,7 +31,7 @@ const XPComponent = (() => {
             if (!acc[path]) {
                 acc[path] = 0;
             }
-            acc[path] += transaction.amount;
+            acc[path] += Number(transaction.amount) || 0;
             return acc;
         }, {});
         
@@ -53,7 +56,7 @@ const XPComponent = (() => {
                     xp: 0
                 };
             }
-            acc[monthYear].xp += transaction.amount;
+            acc[monthYear].xp += Number(transaction.amount) || 0;
             return acc;
         }, {});
         
@@ -102,7 +105,7 @@ const XPComponent = (() => {
             <div class="xp-container">
                 <div class="xp-overview-card">
                     <div class="xp-total">${formattedTotalXP}</div>
-                    <div class="xp-subtitle">Last activity: ${Helpers.timeAgo(mostRecent.createdAt)}</div>
+                    <div class="xp-subtitle">Last activity: ${mostRecent ? Helpers.timeAgo(mostRecent.createdAt) : 'N/A'}</div>
                     
                     <div class="xp-items-list">
                         ${recentItem}
@@ -123,7 +126,7 @@ const XPComponent = (() => {
                         <div class="xp-distribution">
                             ${sortedProjects.slice(0, 3).map(project => {
                                 const projectName = Helpers.getProjectName(project.path);
-                                const percentage = ((project.xp / totalXP) * 100).toFixed(1);
+                                const percentage = totalXP > 0 ? ((project.xp / totalXP) * 100).toFixed(1) : 0;
                                 return `
                                     <div class="xp-distribution-item">
                                         <div class="distribution-header">
@@ -155,7 +158,7 @@ const XPComponent = (() => {
                                 <div class="stat-label">Months</div>
                             </div>
                             <div class="xp-stat">
-                                <div class="stat-value">${(totalXP / transactions.length).toFixed(0)}</div>
+                                <div class="stat-value">${transactions.length > 0 ? Math.round(totalXP / transactions.length) : 0}</div>
                                 <div class="stat-label">Avg XP/Task</div>
                             </div>
                         </div>

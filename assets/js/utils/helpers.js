@@ -82,20 +82,26 @@ const Helpers = (() => {
      * @returns {string} Formatted XP with appropriate unit
      */
     const formatXpAsFileSize = (xp) => {
-        if (xp === 0) return "0 B";
+        // Convert XP to file size format (B, KB, MB, GB)
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let size = xp;
+        let unitIndex = 0;
         
-        // For values under 1000, display as bytes
-        if (xp < 1000) {
-            return `${xp} B`;
+        // Convert to appropriate unit (1024 bytes = 1 KB, etc.)
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
         }
         
-        // For values between 1K and 1M, display as KB with 1 decimal place
-        if (xp < 1000000) {
-            return `${(xp / 1000).toFixed(1)} KB`;
+        // Format with appropriate precision based on unit
+        if (unitIndex === 0) {
+            // Bytes - no decimal places
+            return `${Math.round(size)} ${units[unitIndex]}`;
+        } else {
+            // KB and above - 1 decimal place for smaller values, 2 for larger
+            const decimals = size < 10 ? 2 : 1;
+            return `${size.toFixed(decimals)} ${units[unitIndex]}`;
         }
-        
-        // For values over 1M, display as MB with 2 decimal places
-        return `${(xp / 1000000).toFixed(2)} MB`;
     };
     
     /**
