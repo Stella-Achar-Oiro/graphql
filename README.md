@@ -2,6 +2,10 @@
 
 A modern, dark-themed dashboard for visualizing your school progress using GraphQL. This application fetches and displays user information, XP progress, project grades, audit activities, and skills assessment.
 
+## Live Demo
+
+View the live dashboard at: [https://stella-achar-oiro.github.io/graphql/](https://stella-achar-oiro.github.io/graphql/)
+
 ## Project Structure
 
 ```
