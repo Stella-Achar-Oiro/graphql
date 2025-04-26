@@ -292,17 +292,28 @@ class StatisticsComponent {
     }
 
     const pieData = [
-      { type: "XP Awarded", value: auditCounts.up, percent: (auditCounts.up / total) * 100 },
-      { type: "XP Received", value: auditCounts.down, percent: (auditCounts.down / total) * 100 }
+      { 
+        type: "XP Awarded", 
+        value: auditCounts.up, 
+        percent: (auditCounts.up / total) * 100,
+        formattedValue: FormatUtils.formatXPSize(auditCounts.up)
+      },
+      { 
+        type: "XP Received", 
+        value: auditCounts.down, 
+        percent: (auditCounts.down / total) * 100,
+        formattedValue: FormatUtils.formatXPSize(auditCounts.down)
+      }
     ];
 
-    // Add ratio calculation to chart title using XP amounts
-    const ratio = auditCounts.down > 0 ? (auditCounts.up / auditCounts.down).toFixed(1) : '0.0';
+    // Calculate and format ratio
+    const ratio = auditCounts.down > 0 ? auditCounts.up / auditCounts.down : 0;
+    const formattedRatio = FormatUtils.formatRatio(ratio);
 
     // Update chart container with ratio
     const container = document.getElementById('audit-chart-container');
     container.innerHTML = `
-      <div class="chart-title">Audit XP Distribution (Ratio: ${ratio})</div>
+      <div class="chart-title">Audit XP Distribution (Ratio: ${formattedRatio})</div>
       <div id="audit-pie-container"></div>
     `;
 
@@ -362,20 +373,21 @@ class StatisticsComponent {
       const labelX = centerX + labelRadius * Math.cos(labelAngle);
       const labelY = centerY + labelRadius * Math.sin(labelAngle);
       
+      // Add label with formatted percentage
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.setAttribute('x', labelX);
       label.setAttribute('y', labelY);
       label.setAttribute('text-anchor', 'middle');
       label.setAttribute('fill', 'white');
       label.setAttribute('font-size', '12');
-      label.textContent = `${item.percent.toFixed(1)}%`;
+      label.textContent = `${FormatUtils.formatPercentage(d.percent)}%`;
       
       svg.appendChild(label);
       
       startAngle = endAngle;
     });
 
-    // Add legend
+    // Add legend with formatted XP values
     const legendY = height - 40;
     data.forEach((item, index) => {
       const legendX = 60 + index * (width / 2);
@@ -389,12 +401,12 @@ class StatisticsComponent {
       square.setAttribute('fill', colors[index % colors.length]);
       svg.appendChild(square);
       
-      // Label text
+      // Label text with formatted XP value
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('x', legendX);
       text.setAttribute('y', legendY + 9);
       text.setAttribute('font-size', '12');
-      text.textContent = `${item.type}: ${item.value}`;
+      text.textContent = `${item.type}: ${item.formattedValue}`;
       svg.appendChild(text);
     });
 
