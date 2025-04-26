@@ -1,6 +1,7 @@
 // StatisticsComponent.js
 import FormatUtils from '../utils/FormatUtils.js';
 import GraphQLClient from '../utils/GraphQLClient.js';
+import { MODULE_75_RESULTS_QUERY } from '../utils/queries.js'; 
 
 class StatisticsComponent {
   constructor(container, xpData, auditData) {
@@ -11,7 +12,7 @@ class StatisticsComponent {
 
   render() {
     this.container.innerHTML = `
-      <h2>Statistics (Module #75)</h2>
+      <h2>Statistics</h2>
       <div class="graph-container">
         <div class="graph">
           <h3>XP Progress Over Time</h3>
@@ -36,7 +37,7 @@ class StatisticsComponent {
   renderXPChart() {
     if (!this.xpData || !this.xpData.length) {
       document.getElementById('xp-chart-container').innerHTML = 
-        '<p>No XP data available for Module #75</p>';
+        '<p>No XP data available</p>';
       return;
     }
 
@@ -214,7 +215,7 @@ class StatisticsComponent {
   renderAuditChart() {
     if (!this.auditData.length) {
       document.getElementById('audit-chart-container').innerHTML = 
-        '<p>No audit data available for Module #75</p>';
+        '<p>No audit data available</p>';
       return;
     }
 
@@ -227,7 +228,7 @@ class StatisticsComponent {
     const total = auditCounts.up + auditCounts.down;
     if (total === 0) {
       document.getElementById('audit-chart-container').innerHTML = 
-        '<p>No audit data available for Module #75</p>';
+        '<p>No audit data available</p>';
       return;
     }
 
@@ -333,19 +334,26 @@ class StatisticsComponent {
 
   renderProjectSuccessRate() {
     GraphQLClient.query(MODULE_75_RESULTS_QUERY)
-    .then(data => {
-      const results = data.result || [];
-      
+    .then(data => {      
       // Skip if no data
-      if (results.length === 0) {
+      if (!data || !data.result || data.result.length === 0) {
         document.getElementById('project-chart-container').innerHTML = 
-          '<p>No project results available for Module #75</p>';
+          '<p>No project results available</p>';
         return;
       }
       
-      // Process data
-      const passingProjects = results.filter(r => r.grade === 1);
-      const failingProjects = results.filter(r => r.grade === 0);
+      // Process data with safety checks
+      const results = data.result || [];
+      const passingProjects = results.filter(r => r.grade >= 1);
+      const failingProjects = results.filter(r => r.grade < 1);
+    
+      
+      // Only create chart if we have data
+      if (passingProjects.length === 0 && failingProjects.length === 0) {
+        document.getElementById('project-chart-container').innerHTML = 
+          '<p>No project grade data available</p>';
+        return;
+      }
       
       const chartData = [
         { status: 'PASS', count: passingProjects.length, color: '#69b3a2' },
@@ -380,22 +388,34 @@ class StatisticsComponent {
     g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
     svg.appendChild(g);
   
-    // Find max count for scaling
-    const maxCount = Math.max(...data.map(d => d.count));
+    // Find max count for scaling - add safety check
+    const maxCount = Math.max(...data.map(d => d.count), 1); // Ensure maxCount is at least 1
     
     // X scale (categorical)
     const barWidth = innerWidth / data.length * 0.7;
     const barSpacing = innerWidth / data.length * 0.3;
     
-    // Y scale (linear)
-    const yScale = count => innerHeight - (count / maxCount) * innerHeight;
+    // Y scale (linear) with safety checks
+    const yScale = count => {
+      // Make sure we don't return NaN
+      if (maxCount === 0 || isNaN(count)) {
+        return innerHeight;
+      }
+      return innerHeight - (count / maxCount) * innerHeight;
+    };
   
     // Create bars
     data.forEach((d, i) => {
       const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       const x = i * (barWidth + barSpacing);
-      const y = yScale(d.count);
-      const height = innerHeight - y;
+      
+      // Add safety checks
+      let y = yScale(d.count);
+      let height = innerHeight - y;
+      
+      // Ensure values are valid numbers
+      if (isNaN(y)) y = innerHeight;
+      if (isNaN(height)) height = 0;
       
       // Bar rectangle
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -403,13 +423,13 @@ class StatisticsComponent {
       rect.setAttribute('y', y);
       rect.setAttribute('width', barWidth);
       rect.setAttribute('height', height);
-      rect.setAttribute('fill', d.color);
+      rect.setAttribute('fill', d.color || '#69b3a2'); // Default color if none provided
       barGroup.appendChild(rect);
       
       // Count label
       const countLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       countLabel.setAttribute('x', x + barWidth / 2);
-      countLabel.setAttribute('y', y - 10);
+      countLabel.setAttribute('y', Math.max(y - 10, 10)); // Ensure y is never below 10
       countLabel.setAttribute('text-anchor', 'middle');
       countLabel.textContent = d.count;
       countLabel.setAttribute('font-size', '14');

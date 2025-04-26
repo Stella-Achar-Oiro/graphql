@@ -1,14 +1,14 @@
 // FormatUtils.js
 class FormatUtils {
-    static formatXPSize(xpAmount) {
-      if (xpAmount < 1024) {
-        return `${xpAmount} bytes`;
-      } else if (xpAmount < 1024 * 1024) {
-        return `${(xpAmount / 1024).toFixed(2)} kB`;
-      } else {
-        return `${(xpAmount / (1024 * 1024)).toFixed(2)} MB`;
-      }
+  static formatXPSize(xpAmount) {
+    if (xpAmount < 1000) {
+      return `${xpAmount} XP`;
+    } else if (xpAmount < 1000000) {
+      return `${(xpAmount / 1000).toFixed(2)} kXP`;
+    } else {
+      return `${(xpAmount / 1000000).toFixed(2)} MXP`;
     }
+  }
   
     static formatDate(dateString) {
       const date = new Date(dateString);

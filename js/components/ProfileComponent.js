@@ -53,33 +53,48 @@ class ProfileComponent {
     });
   }
 
-async loadData() {
-  try {
-    const [userInfo, xpData, progressData, totalXP, auditData] = await Promise.all([
-      GraphQLClient.query(USER_INFO_QUERY),
-      GraphQLClient.query(MODULE_75_XP_QUERY),
-      GraphQLClient.query(MODULE_75_PROGRESS_QUERY),
-      GraphQLClient.query(TOTAL_MODULE_75_XP_QUERY),
-      GraphQLClient.query(AUDIT_DATA_QUERY)
-    ]);
-
-    console.log('XP Data:', xpData);
-    console.log('Total XP:', totalXP);
-
-    this.userData = {
-      user: userInfo.user[0],
-      transactions: xpData.transaction || [],
-      progress: progressData.progress || [],
-      totalXP: totalXP.transaction_aggregate?.aggregate?.sum?.amount || 0,
-      auditData: auditData.transaction || []
-    };
-
-    document.getElementById('loading').style.display = 'none';
-  } catch (error) {
-    console.error('Failed to load profile data:', error);
-    document.getElementById('loading').textContent = 'Error loading profile data. Please try again.';
+  async loadData() {
+    try {
+      const [userInfo, xpData, progressData, totalXP, auditData] = await Promise.all([
+        GraphQLClient.query(USER_INFO_QUERY),
+        GraphQLClient.query(MODULE_75_XP_QUERY),
+        GraphQLClient.query(MODULE_75_PROGRESS_QUERY),
+        GraphQLClient.query(TOTAL_MODULE_75_XP_QUERY),
+        GraphQLClient.query(AUDIT_DATA_QUERY)
+      ]);
+  
+      console.log('XP Data:', xpData);
+      console.log('Total XP:', totalXP);
+  
+      // Process XP data to calculate additional metrics
+      const transactions = xpData.transaction || [];
+      const totalXPAmount = totalXP.transaction_aggregate?.aggregate?.sum?.amount || 0;
+      
+      // Process project success data
+      const progressItems = progressData.progress || [];
+      const passedProjects = progressItems.filter(item => item.grade >= 1).length;
+      const failedProjects = progressItems.filter(item => item.grade < 1).length;
+  
+      this.userData = {
+        user: userInfo.user[0],
+        transactions: transactions,
+        progress: progressData.progress || [],
+        totalXP: totalXPAmount,
+        projectStats: {
+          total: progressItems.length,
+          passed: passedProjects,
+          failed: failedProjects,
+          successRate: progressItems.length > 0 ? (passedProjects / progressItems.length) * 100 : 0
+        },
+        auditData: auditData.transaction || []
+      };
+  
+      document.getElementById('loading').style.display = 'none';
+    } catch (error) {
+      console.error('Failed to load profile data:', error);
+      document.getElementById('loading').textContent = 'Error loading profile data. Please try again.';
+    }
   }
-}
 
   renderSections() {
     if (!this.userData) return;

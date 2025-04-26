@@ -34,16 +34,12 @@ export const MODULE_75_XP_QUERY = `
   }
 `;
 
-// Updated progress query for module 75
+// Fixed progress query for module 75 - removed nested event reference
 export const MODULE_75_PROGRESS_QUERY = `
   {
     progress(
       where: {
-        object: {
-          event: {
-            id: {_eq: 75}
-          }
-        }
+        eventId: {_eq: 75}
       },
       order_by: {createdAt: desc}
     ) {
@@ -60,16 +56,12 @@ export const MODULE_75_PROGRESS_QUERY = `
   }
 `;
 
-// Updated results query for module 75
+// Fixed results query for module 75 - removed nested event reference
 export const MODULE_75_RESULTS_QUERY = `
   {
     result(
       where: {
-        object: {
-          event: {
-            id: {_eq: 75}
-          }
-        }
+        eventId: {_eq: 75}
       },
       order_by: {createdAt: desc}
     ) {
@@ -85,7 +77,7 @@ export const MODULE_75_RESULTS_QUERY = `
   }
 `;
 
-// Updated total XP query for module 75
+// Total XP query for module 75 (unchanged)
 export const TOTAL_MODULE_75_XP_QUERY = `
   {
     transaction_aggregate(
@@ -105,14 +97,14 @@ export const TOTAL_MODULE_75_XP_QUERY = `
   }
 `;
 
-// Updated audit query for module 75
+// Fixed audit query for module 75 - removed nested event reference
 export const AUDIT_DATA_QUERY = `
   {
     transaction(
       where: {
         _and: [
           { type: {_in: ["up", "down"]} },
-          { object: { event: { id: {_eq: 75} } } }
+          { eventId: {_eq: 75} }
         ]
       }
     ) {

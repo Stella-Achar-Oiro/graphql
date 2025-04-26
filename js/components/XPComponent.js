@@ -10,7 +10,7 @@ class XPComponent {
 
   render() {
     this.container.innerHTML = `
-      <h2>XP Information (Module #75)</h2>
+      <h2>XP Information</h2>
       <div class="info-card">
         <p><strong>Total XP:</strong> ${FormatUtils.formatXPSize(this.totalXP)}</p>
         <h3>XP Transactions</h3>
@@ -21,7 +21,7 @@ class XPComponent {
 
   renderTransactionsList() {
     if (!this.transactions.length) {
-      return '<p>No XP transactions found for Module #75</p>';
+      return '<p>No XP transactions found</p>';
     }
 
     const transactionsHTML = this.transactions

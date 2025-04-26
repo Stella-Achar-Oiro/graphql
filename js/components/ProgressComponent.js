@@ -9,7 +9,7 @@ class ProgressComponent {
 
   render() {
     this.container.innerHTML = `
-      <h2>Progress Information (Module #75)</h2>
+      <h2>Progress Information</h2>
       <div class="info-card">
         <h3>Project Progress</h3>
         ${this.renderProgressList()}
@@ -19,7 +19,7 @@ class ProgressComponent {
 
   renderProgressList() {
     if (!this.progressData.length) {
-      return '<p>No progress data found for Module #75</p>';
+      return '<p>No progress data found</p>';
     }
 
     const progressHTML = this.progressData
