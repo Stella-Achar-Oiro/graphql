@@ -13,6 +13,20 @@ class Router {
       '/profile': async () => {
         const { default: ProfileComponent } = await import('./components/ProfileComponent.js');
         new ProfileComponent('app').render();
+      },
+      '/transactions': async () => {
+        const { default: TransactionsComponent } = await import('./components/TransactionsComponent.js');
+        const { default: GraphQLClient } = await import('./utils/GraphQLClient.js');
+        const { MODULE_75_XP_QUERY } = await import('./utils/queries.js');
+        
+        try {
+          const data = await GraphQLClient.query(MODULE_75_XP_QUERY);
+          const transactions = data.transaction || [];
+          new TransactionsComponent(document.getElementById('app'), transactions).render();
+        } catch (error) {
+          console.error('Failed to load transactions:', error);
+          this.navigate('/profile');
+        }
       }
     };
 

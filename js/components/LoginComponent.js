@@ -9,32 +9,117 @@ class LoginComponent {
   render() {
     this.container.innerHTML = `
       <div class="login-container">
-        <h2>Login to Your Profile</h2>
+        <h2>GraphQL Profile Dashboard</h2>
         <div id="error-message" class="error-message" style="display: none;"></div>
+        
         <form id="login-form">
           <div class="form-group">
-            <label for="username">Username or Email:</label>
+            <label for="username">Username or Email</label>
             <input type="text" id="username" name="username" required>
           </div>
+          
           <div class="form-group">
-            <label for="password">Password:</label>
+            <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
           </div>
-          <button type="submit">Login</button>
+          
+          <button type="submit" id="login-button">
+            <span id="login-text">Login</span>
+            <span id="login-spinner" class="spinner" style="display: none;"></span>
+          </button>
         </form>
+        
+        <div class="login-footer">
+          <p>GraphQL Profile Dashboard</p>
+        </div>
+      </div>
+      
+      <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch" class="theme-switch">
+        <label for="theme-switch" class="theme-label">
+          <i class="fas fa-sun"></i>
+          <i class="fas fa-moon"></i>
+          <div class="toggle-ball"></div>
+        </label>
       </div>
     `;
-
+    
+    this.addStyles();
     this.attachEventListeners();
+  }
+  
+  addStyles() {
+    // Add login-specific styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .login-container {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      
+      .login-footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-color);
+        opacity: 0.7;
+      }
+      
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-left: 10px;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `;
+    
+    document.head.appendChild(style);
+    
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      if (document.getElementById('theme-switch')) {
+        document.getElementById('theme-switch').checked = true;
+      }
+    }
   }
 
   attachEventListeners() {
     const form = document.getElementById('login-form');
     const errorMessage = document.getElementById('error-message');
+    const loginButton = document.getElementById('login-button');
+    const loginText = document.getElementById('login-text');
+    const loginSpinner = document.getElementById('login-spinner');
+    
+    // Theme toggle
+    if (document.getElementById('theme-switch')) {
+      document.getElementById('theme-switch').addEventListener('change', function() {
+        if (this.checked) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    }
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMessage.style.display = 'none';
+      
+      // Show loading state
+      loginButton.disabled = true;
+      loginText.textContent = 'Logging in...';
+      loginSpinner.style.display = 'inline-block';
       
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
@@ -89,6 +174,12 @@ class LoginComponent {
         // Use window.location.hash instead of Router
         window.location.hash = '/profile';
       } catch (err) {
+        // Reset button state
+        loginButton.disabled = false;
+        loginText.textContent = 'Login';
+        loginSpinner.style.display = 'none';
+        
+        // Show error
         errorMessage.textContent = 'Login failed: ' + err.message;
         errorMessage.style.display = 'block';
       }

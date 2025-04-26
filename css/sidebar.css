@@ -1,0 +1,128 @@
+/* Sidebar styles */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+  }
+  
+  .sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .sidebar-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+  }
+  
+  .sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+  
+  .sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar-nav li {
+    margin-bottom: 5px;
+  }
+  
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .sidebar-nav a i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+  }
+  
+  .sidebar-nav a:hover {
+    background-color: var(--primary-light);
+    color: white;
+  }
+  
+  .sidebar-nav a.active {
+    background-color: var(--primary-light);
+    color: var(--secondary-color);
+    border-left: 3px solid var(--secondary-color);
+  }
+  
+  .sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .sidebar-logout {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .sidebar-logout i {
+    margin-left: 8px;
+  }
+  
+  .sidebar-logout:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Responsive sidebar */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 70px;
+      overflow: hidden;
+    }
+    
+    .sidebar-header h2 {
+      display: none;
+    }
+    
+    .sidebar-nav a span {
+      display: none;
+    }
+    
+    .sidebar-nav a i {
+      margin-right: 0;
+      font-size: 1.3rem;
+    }
+    
+    .sidebar-nav a.active {
+      border-left: none;
+      border-right: 3px solid var(--secondary-color);
+    }
+    
+    .sidebar-logout span {
+      display: none;
+    }
+  }
