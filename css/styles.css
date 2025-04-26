@@ -1,0 +1,200 @@
+/* styles.css */
+:root {
+    --primary-color: #4a6fa5;
+    --secondary-color: #69b3a2;
+    --background-color: #f5f7fa;
+    --text-color: #333;
+    --card-bg: #fff;
+    --error-color: #e74c3c;
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+  
+  #app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Login Styles */
+  .login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #3a5a80;
+  }
+  
+  .error-message {
+    color: var(--error-color);
+    background-color: rgba(231, 76, 60, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Profile Styles */
+  .profile-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  header h1 {
+    margin: 0;
+  }
+  
+  .logout-btn {
+    width: auto;
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  #loading {
+    padding: 20px;
+    text-align: center;
+    font-style: italic;
+  }
+  
+  .profile-section, .statistics-section {
+    padding: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .profile-section:last-child, .statistics-section:last-child {
+    border-bottom: none;
+  }
+  
+  .profile-section h2, .statistics-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+  }
+  
+  .info-card {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+  }
+  
+  .transaction-list, .progress-list {
+    list-style: none;
+    margin-top: 10px;
+  }
+  
+  .transaction-list li, .progress-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .graph-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .graph {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+  }
+  
+  .graph h3 {
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  svg {
+    display: block;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 4px;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .graph-container {
+      flex-direction: column;
+    }
+    
+    .transaction-list li, .progress-list li {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .transaction-list li span, .progress-list li span {
+      margin-bottom: 5px;
+    }
+  }
