@@ -10,13 +10,10 @@ export const USER_INFO_QUERY = `
 
 // Updated XP query - using eventId instead of path filtering
 export const MODULE_75_XP_QUERY = `
-  {
+   {
     transaction(
       where: {
-        _and: [
-          { type: {_eq: "xp"} },
-          { eventId: {_eq: 75} }
-        ]
+        type: {_eq: "xp"}
       },
       order_by: {createdAt: desc}
     ) {
