@@ -8,25 +8,45 @@ export const USER_INFO_QUERY = `
   }
 `;
 
+// Updated XP query - using eventId instead of path filtering
 export const MODULE_75_XP_QUERY = `
   {
-    transaction(where: { 
-      type: {_eq: "xp"}, 
-      path: {_ilike: "%#75%"}
-    }) {
+    transaction(
+      where: {
+        _and: [
+          { type: {_eq: "xp"} },
+          { eventId: {_eq: 75} }
+        ]
+      },
+      order_by: {createdAt: desc}
+    ) {
       id
       amount
       createdAt
       path
+      objectId
+      object {
+        id
+        name
+        type
+      }
     }
   }
 `;
 
+// Updated progress query for module 75
 export const MODULE_75_PROGRESS_QUERY = `
   {
-    progress(where: {
-      path: {_ilike: "%#75%"}
-    }) {
+    progress(
+      where: {
+        object: {
+          event: {
+            id: {_eq: 75}
+          }
+        }
+      },
+      order_by: {createdAt: desc}
+    ) {
       id
       grade
       createdAt
@@ -40,11 +60,19 @@ export const MODULE_75_PROGRESS_QUERY = `
   }
 `;
 
+// Updated results query for module 75
 export const MODULE_75_RESULTS_QUERY = `
   {
-    result(where: {
-      path: {_ilike: "%#75%"}
-    }) {
+    result(
+      where: {
+        object: {
+          event: {
+            id: {_eq: 75}
+          }
+        }
+      },
+      order_by: {createdAt: desc}
+    ) {
       id
       grade
       createdAt
@@ -57,12 +85,15 @@ export const MODULE_75_RESULTS_QUERY = `
   }
 `;
 
+// Updated total XP query for module 75
 export const TOTAL_MODULE_75_XP_QUERY = `
   {
     transaction_aggregate(
       where: {
-        type: {_eq: "xp"},
-        path: {_ilike: "%#75%"}
+        _and: [
+          { type: {_eq: "xp"} },
+          { eventId: {_eq: 75} }
+        ]
       }
     ) {
       aggregate {
@@ -74,18 +105,27 @@ export const TOTAL_MODULE_75_XP_QUERY = `
   }
 `;
 
+// Updated audit query for module 75
 export const AUDIT_DATA_QUERY = `
   {
     transaction(
       where: {
-        type: {_in: ["up", "down"]},
-        path: {_ilike: "%#75%"}
+        _and: [
+          { type: {_in: ["up", "down"]} },
+          { object: { event: { id: {_eq: 75} } } }
+        ]
       }
     ) {
       id
       type
       amount
       createdAt
+      path
+      object {
+        id
+        name
+        type
+      }
     }
   }
 `;

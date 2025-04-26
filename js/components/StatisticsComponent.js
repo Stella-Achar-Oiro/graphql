@@ -1,5 +1,6 @@
 // StatisticsComponent.js
 import FormatUtils from '../utils/FormatUtils.js';
+import GraphQLClient from '../utils/GraphQLClient.js';
 
 class StatisticsComponent {
   constructor(container, xpData, auditData) {
@@ -33,7 +34,7 @@ class StatisticsComponent {
   }
 
   renderXPChart() {
-    if (!this.xpData.length) {
+    if (!this.xpData || !this.xpData.length) {
       document.getElementById('xp-chart-container').innerHTML = 
         '<p>No XP data available for Module #75</p>';
       return;
@@ -330,32 +331,18 @@ class StatisticsComponent {
     document.getElementById('audit-chart-container').appendChild(svg);
   }
 
-
-renderProjectSuccessRate() {
-    // Query for module #75 project results
-    GraphQLClient.query(`{
-      result(where: {
-        path: {_ilike: "%#75%"},
-        type: {_eq: "project"}
-      }) {
-        id
-        grade
-        path
-        object {
-          name
-        }
-      }
-    }`)
+  renderProjectSuccessRate() {
+    GraphQLClient.query(MODULE_75_RESULTS_QUERY)
     .then(data => {
-      const results = data.result;
+      const results = data.result || [];
       
       // Skip if no data
-      if (!results || results.length === 0) {
+      if (results.length === 0) {
         document.getElementById('project-chart-container').innerHTML = 
           '<p>No project results available for Module #75</p>';
         return;
       }
-  
+      
       // Process data
       const passingProjects = results.filter(r => r.grade === 1);
       const failingProjects = results.filter(r => r.grade === 0);

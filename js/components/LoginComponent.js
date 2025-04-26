@@ -1,6 +1,5 @@
 // LoginComponent.js
 import AuthManager from '../utils/AuthManager.js';
-import Router from '../router.js';
 
 class LoginComponent {
   constructor(containerId) {
@@ -56,13 +55,39 @@ class LoginComponent {
           throw new Error('Invalid credentials');
         }
 
-        const data = await response.json();
+        // Process response data properly
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          // Handle case where response is not JSON
+          data = await response.text();
+        }
+
+        // Extract token correctly
+        let token;
+        if (typeof data === 'string' && data.split('.').length === 3) {
+          // If data is already a JWT string
+          token = data;
+        } else if (typeof data === 'object') {
+          // If data is an object with token property
+          token = data.token || data.jwt || data.access_token;
+        }
+        
+        if (!token) {
+          throw new Error('No token received from server');
+        }
+
+        // Validate token format
+        if (!token.includes('.') || token.split('.').length !== 3) {
+          throw new Error('Invalid token format received from server');
+        }
         
         // Store JWT token
-        AuthManager.setToken(data.token);
+        AuthManager.setToken(token);
         
-        // Navigate to profile page
-        Router.navigate('/profile');
+        // Use window.location.hash instead of Router
+        window.location.hash = '/profile';
       } catch (err) {
         errorMessage.textContent = 'Login failed: ' + err.message;
         errorMessage.style.display = 'block';

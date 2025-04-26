@@ -1,14 +1,19 @@
 // router.js
-import LoginComponent from './components/LoginComponent.js';
-import ProfileComponent from './components/ProfileComponent.js';
 import AuthManager from './utils/AuthManager.js';
 
 class Router {
   constructor() {
+    // Use dynamic imports to avoid circular dependencies
     this.routes = {
       '/': this.redirectToDefaultRoute.bind(this),
-      '/login': () => new LoginComponent('app').render(),
-      '/profile': () => new ProfileComponent('app').render()
+      '/login': async () => {
+        const { default: LoginComponent } = await import('./components/LoginComponent.js');
+        new LoginComponent('app').render();
+      },
+      '/profile': async () => {
+        const { default: ProfileComponent } = await import('./components/ProfileComponent.js');
+        new ProfileComponent('app').render();
+      }
     };
 
     this.init();
@@ -43,4 +48,6 @@ class Router {
   }
 }
 
-export default new Router();
+// Export a singleton instance
+const router = new Router();
+export default router;

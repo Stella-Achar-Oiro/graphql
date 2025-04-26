@@ -1,7 +1,6 @@
 // ProfileComponent.js
 import AuthManager from '../utils/AuthManager.js';
 import GraphQLClient from '../utils/GraphQLClient.js';
-import Router from '../router.js';
 import UserInfoComponent from './UserInfoComponent.js';
 import XPComponent from './XPComponent.js';
 import ProgressComponent from './ProgressComponent.js';
@@ -22,7 +21,8 @@ class ProfileComponent {
 
   async render() {
     if (!AuthManager.isAuthenticated()) {
-      Router.navigate('/login');
+      // Instead of directly using Router, dispatch a navigation event
+      window.location.hash = '/login';
       return;
     }
 
@@ -48,34 +48,38 @@ class ProfileComponent {
   attachLogoutHandler() {
     document.getElementById('logout-btn').addEventListener('click', () => {
       AuthManager.removeToken();
-      Router.navigate('/login');
+      // Instead of directly using Router, change the hash
+      window.location.hash = '/login';
     });
   }
 
-  async loadData() {
-    try {
-      const [userInfo, xpData, progressData, totalXP, auditData] = await Promise.all([
-        GraphQLClient.query(USER_INFO_QUERY),
-        GraphQLClient.query(MODULE_75_XP_QUERY),
-        GraphQLClient.query(MODULE_75_PROGRESS_QUERY),
-        GraphQLClient.query(TOTAL_MODULE_75_XP_QUERY),
-        GraphQLClient.query(AUDIT_DATA_QUERY)
-      ]);
+async loadData() {
+  try {
+    const [userInfo, xpData, progressData, totalXP, auditData] = await Promise.all([
+      GraphQLClient.query(USER_INFO_QUERY),
+      GraphQLClient.query(MODULE_75_XP_QUERY),
+      GraphQLClient.query(MODULE_75_PROGRESS_QUERY),
+      GraphQLClient.query(TOTAL_MODULE_75_XP_QUERY),
+      GraphQLClient.query(AUDIT_DATA_QUERY)
+    ]);
 
-      this.userData = {
-        user: userInfo.user[0],
-        transactions: xpData.transaction,
-        progress: progressData.progress,
-        totalXP: totalXP.transaction_aggregate.aggregate.sum.amount || 0,
-        auditData: auditData.transaction
-      };
+    console.log('XP Data:', xpData);
+    console.log('Total XP:', totalXP);
 
-      document.getElementById('loading').style.display = 'none';
-    } catch (error) {
-      console.error('Failed to load profile data:', error);
-      document.getElementById('loading').textContent = 'Error loading profile data. Please try again.';
-    }
+    this.userData = {
+      user: userInfo.user[0],
+      transactions: xpData.transaction || [],
+      progress: progressData.progress || [],
+      totalXP: totalXP.transaction_aggregate?.aggregate?.sum?.amount || 0,
+      auditData: auditData.transaction || []
+    };
+
+    document.getElementById('loading').style.display = 'none';
+  } catch (error) {
+    console.error('Failed to load profile data:', error);
+    document.getElementById('loading').textContent = 'Error loading profile data. Please try again.';
   }
+}
 
   renderSections() {
     if (!this.userData) return;
