@@ -13,6 +13,8 @@
   --error-color: #e74c3c;         /* Error color */
   --success-color: #2ecc71;       /* Success color */
   --pending-color: #f1c40f;       /* Yellow for pending status */
+  --chart-audit-awarded: #2ecc71;    /* Green for XP awarded */
+  --chart-audit-received: #e74c3c;   /* Red for XP received */
 }
 
 /* Dark mode colors */
@@ -32,6 +34,8 @@
   --chart-secondary: #f39c12;     /* Secondary chart color */
   --chart-success: #2ecc71;       /* Success color for charts */
   --chart-error: #e74c3c;         /* Error color for charts */
+  --chart-audit-awarded: #2ecc71;    /* Keep same green in dark mode */
+  --chart-audit-received: #e74c3c;   /* Keep same red in dark mode */
 }
 
 /* Add dark mode specific styles for charts */

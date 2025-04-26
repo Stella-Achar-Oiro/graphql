@@ -270,18 +270,20 @@ class StatisticsComponent {
   }
 
   renderAuditChart() {
-    if (!this.auditData.length) {
+    if (!this.auditData || !this.auditData.length) {
       document.getElementById('audit-chart-container').innerHTML = 
         '<p>No audit data available</p>';
       return;
     }
 
-    // Calculate XP totals for audits
+    // Calculate XP totals for audits with safety checks
     const auditCounts = {
-      up: this.auditData.filter(item => item.type === "up")
-        .reduce((sum, audit) => sum + (audit.amount || 0), 0),
-      down: this.auditData.filter(item => item.type === "down")
-        .reduce((sum, audit) => sum + (audit.amount || 0), 0)
+      up: this.auditData
+        .filter(item => item.type === "up" && item.amount)
+        .reduce((sum, audit) => sum + audit.amount, 0) || 0,
+      down: this.auditData
+        .filter(item => item.type === "down" && item.amount)
+        .reduce((sum, audit) => sum + audit.amount, 0) || 0
     };
 
     const total = auditCounts.up + auditCounts.down;
@@ -295,22 +297,23 @@ class StatisticsComponent {
       { 
         type: "XP Awarded", 
         value: auditCounts.up, 
-        percent: (auditCounts.up / total) * 100,
-        formattedValue: FormatUtils.formatXPSize(auditCounts.up)
+        percent: (auditCounts.up / total) * 100 || 0,
+        formattedValue: FormatUtils.formatXPSize(auditCounts.up),
+        color: 'var(--chart-audit-awarded)'
       },
       { 
         type: "XP Received", 
         value: auditCounts.down, 
-        percent: (auditCounts.down / total) * 100,
-        formattedValue: FormatUtils.formatXPSize(auditCounts.down)
+        percent: (auditCounts.down / total) * 100 || 0,
+        formattedValue: FormatUtils.formatXPSize(auditCounts.down),
+        color: 'var(--chart-audit-received)'
       }
     ];
 
-    // Calculate and format ratio
+    // Calculate and format ratio with safety check
     const ratio = auditCounts.down > 0 ? auditCounts.up / auditCounts.down : 0;
     const formattedRatio = FormatUtils.formatRatio(ratio);
 
-    // Update chart container with ratio
     const container = document.getElementById('audit-chart-container');
     container.innerHTML = `
       <div class="chart-title">Audit XP Distribution (Ratio: ${formattedRatio})</div>
@@ -335,12 +338,14 @@ class StatisticsComponent {
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
     // Colors for pie slices - use theme variables
-    const colors = ['var(--chart-primary)', 'var(--chart-secondary)'];
+    const colors = data.map(item => item.color);
 
     // Calculate angles for pie slices
     let startAngle = 0;
     data.forEach((item, index) => {
-      const endAngle = startAngle + (item.percent / 100) * (Math.PI * 2);
+      // Ensure percent is a valid number
+      const percent = Number.isNaN(item.percent) ? 0 : item.percent;
+      const endAngle = startAngle + (percent / 100) * (Math.PI * 2);
       
       // Calculate coordinates for path
       const x1 = centerX + radius * Math.cos(startAngle);
@@ -361,29 +366,31 @@ class StatisticsComponent {
       ].join(' ');
       
       path.setAttribute('d', d);
-      path.setAttribute('fill', colors[index % colors.length]);
+      path.setAttribute('fill', colors[index]);
       path.setAttribute('stroke', 'white');
       path.setAttribute('stroke-width', '2');
       
       svg.appendChild(path);
       
-      // Add label
-      const labelAngle = startAngle + (endAngle - startAngle) / 2;
-      const labelRadius = radius * 0.7;
-      const labelX = centerX + labelRadius * Math.cos(labelAngle);
-      const labelY = centerY + labelRadius * Math.sin(labelAngle);
-      
-      // Add label with formatted percentage
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', labelX);
-      label.setAttribute('y', labelY);
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('fill', 'white');
-      label.setAttribute('font-size', '12');
-      label.textContent = `${FormatUtils.formatPercentage(d.percent)}%`;
-      
-      svg.appendChild(label);
-      
+      // Add label only if percent is a valid number
+      if (percent > 0) {
+        const labelAngle = startAngle + (endAngle - startAngle) / 2;
+        const labelRadius = radius * 0.7;
+        const labelX = centerX + labelRadius * Math.cos(labelAngle);
+        const labelY = centerY + labelRadius * Math.sin(labelAngle);
+        
+        // Add label with formatted percentage
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', labelX);
+        label.setAttribute('y', labelY);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', 'white');
+        label.setAttribute('font-size', '12');
+        label.textContent = `${FormatUtils.formatPercentage(percent)}%`;
+        
+        svg.appendChild(label);
+      }
+
       startAngle = endAngle;
     });
 
@@ -398,15 +405,17 @@ class StatisticsComponent {
       square.setAttribute('y', legendY);
       square.setAttribute('width', 10);
       square.setAttribute('height', 10);
-      square.setAttribute('fill', colors[index % colors.length]);
-      svg.appendChild(square);
+      square.setAttribute('fill', colors[index]);
       
       // Label text with formatted XP value
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('x', legendX);
       text.setAttribute('y', legendY + 9);
       text.setAttribute('font-size', '12');
+      text.setAttribute('fill', 'var(--text-color)');
       text.textContent = `${item.type}: ${item.formattedValue}`;
+      
+      svg.appendChild(square);
       svg.appendChild(text);
     });
 
