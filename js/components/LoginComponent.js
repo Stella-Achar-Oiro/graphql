@@ -9,7 +9,7 @@ class LoginComponent {
   render() {
     this.container.innerHTML = `
       <div class="login-container">
-        <h2>GraphQL Profile Dashboard</h2>
+        <h2>Dev Profile</h2>
         <div id="error-message" class="error-message" style="display: none;"></div>
         
         <form id="login-form">
@@ -30,7 +30,7 @@ class LoginComponent {
         </form>
         
         <div class="login-footer">
-          <p>GraphQL Profile Dashboard</p>
+          <p>Dev Profile</p>
         </div>
       </div>
       
