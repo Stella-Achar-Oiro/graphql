@@ -13,7 +13,10 @@ export const MODULE_75_XP_QUERY = `
    {
     transaction(
       where: {
-        type: {_eq: "xp"}
+        _and: [
+          { type: {_eq: "xp"} },
+          { eventId: {_eq: 75} }
+        ]
       },
       order_by: {createdAt: desc}
     ) {
