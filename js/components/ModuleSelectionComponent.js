@@ -1,8 +1,11 @@
 // ModuleSelectionComponent.js
+import FormatUtils from '../utils/FormatUtils.js';
+
 class ModuleSelectionComponent {
   constructor(container, activeModuleId, onModuleSelect) {
     this.container = container;
-    this.activeModuleId = activeModuleId;
+    // Use getPreferredModule() for initial module
+    this.activeModuleId = activeModuleId || FormatUtils.getPreferredModule();
     this.onModuleSelect = onModuleSelect;
     this.modules = [
       {
@@ -190,10 +193,12 @@ class ModuleSelectionComponent {
   attachEventListeners() {
     const cards = this.container.querySelectorAll('.module-card');
     cards.forEach(card => {
-      card.addEventListener('click', () => {
+      card.addEventListener('click', async () => {
         const moduleId = parseInt(card.dataset.moduleId);
         if (moduleId !== this.activeModuleId) {
           this.activeModuleId = moduleId;
+          // Save module preference when changed
+          await FormatUtils.saveModulePreference(moduleId);
           this.onModuleSelect(moduleId);
           
           // Update active state

@@ -1,6 +1,7 @@
 // router.js
 import AuthManager from './utils/AuthManager.js';
 import { getXPQuery } from './utils/queries.js';
+import FormatUtils from './utils/FormatUtils.js';
 
 class Router {
   constructor() {
@@ -19,8 +20,9 @@ class Router {
         const { default: GraphQLClient } = await import('./utils/GraphQLClient.js');
         
         try {
-          // Default to module 75 for transactions view
-          const data = await GraphQLClient.query(getXPQuery(75));
+          // Use the preferred module ID
+          const moduleId = FormatUtils.getPreferredModule();
+          const data = await GraphQLClient.query(getXPQuery(moduleId));
           const transactions = data.transaction || [];
           new TransactionsComponent(document.getElementById('app'), transactions).render();
         } catch (error) {

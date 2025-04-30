@@ -5,6 +5,7 @@ class ProgressComponent {
   constructor(container, progressData) {
     this.container = container;
     this.progressData = progressData;
+    this.activeModuleId = FormatUtils.getPreferredModule();
   }
 
   render() {
@@ -106,29 +107,36 @@ class ProgressComponent {
       }
       
       .stat-box {
-        background-color: rgba(0, 0, 0, 0.03);
+        background-color: var(--card-bg);
+        border: 1px solid rgba(var(--text-rgb), 0.1);
         border-radius: 8px;
-        padding: 15px;
+        padding: 20px;
         text-align: center;
+        transition: transform 0.3s ease;
+      }
+      
+      .stat-box:hover {
+        transform: translateY(-2px);
       }
       
       .stat-value {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 600;
-        color: var(--primary-color);
-        margin-bottom: 5px;
+        color: var(--stat-value-color);
+        margin-bottom: 8px;
       }
       
       .stat-label {
         font-size: 0.9rem;
-        opacity: 0.7;
+        color: var(--text-muted);
       }
       
       .subsection-title {
         font-size: 1.1rem;
-        margin-bottom: 15px;
+        margin: 25px 0 15px;
         padding-bottom: 10px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid rgba(var(--text-rgb), 0.1);
+        color: var(--text-color);
       }
       
       .projects-list {
@@ -140,7 +148,7 @@ class ProgressComponent {
         justify-content: space-between;
         align-items: center;
         padding: 12px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid rgba(var(--text-rgb), 0.1);
       }
       
       .project-item:last-child {
@@ -149,47 +157,88 @@ class ProgressComponent {
       
       .project-name {
         font-weight: 500;
+        color: var(--text-color);
         margin-bottom: 5px;
       }
       
       .project-date {
         font-size: 0.8rem;
-        opacity: 0.7;
+        color: var(--text-muted);
       }
       
       .project-grade {
         font-weight: 600;
-        padding: 5px 10px;
+        padding: 6px 12px;
         border-radius: 4px;
         font-size: 0.9rem;
       }
       
       .project-grade.passed {
-        background-color: rgba(46, 204, 113, 0.2);
-        color: #2ecc71;
+        background-color: rgba(46, 204, 113, 0.15);
+        color: var(--success-color);
       }
       
       .project-grade.failed {
-        background-color: rgba(231, 76, 60, 0.2);
-        color: #e74c3c;
+        background-color: rgba(231, 76, 60, 0.15);
+        color: var(--error-color);
       }
       
       .project-grade.pending-audit {
-        background-color: rgba(241, 196, 15, 0.2);
-        color: #f1c40f;
+        background-color: rgba(241, 196, 15, 0.15);
+        color: var(--pending-color);
       }
       
       .no-data {
         padding: 15px;
-        background-color: rgba(0, 0, 0, 0.03);
+        background-color: var(--card-bg);
         border-radius: 4px;
         text-align: center;
-        color: var(--text-color);
-        opacity: 0.7;
+        color: var(--text-muted);
+      }
+
+      [data-theme="dark"] .stat-box {
+        background-color: rgba(255, 255, 255, 0.03);
+      }
+
+      [data-theme="dark"] .stat-value {
+        color: var(--stat-value-color);
+      }
+      
+      [data-theme="dark"] .project-grade.passed {
+        color: #2ecc71;
+      }
+      
+      [data-theme="dark"] .project-grade.failed {
+        color: #e74c3c;
+      }
+      
+      [data-theme="dark"] .project-grade.pending-audit {
+        color: #f1c40f;
       }
     `;
     
     document.head.appendChild(style);
+  }
+
+  createBarChart(data) {
+    // ...existing code...
+
+    data.forEach((item, index) => {
+      // ...existing code...
+
+      // Label text with formatted XP value
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', legendX);
+      text.setAttribute('y', legendY + 9);
+      text.setAttribute('font-size', '12');
+      text.setAttribute('fill', 'var(--text-color)');
+      text.textContent = `${item.type}: ${FormatUtils.formatXPSize(item.value, this.activeModuleId)}`;
+      
+      svg.appendChild(square);
+      svg.appendChild(text);
+    });
+
+    // ...rest of existing code...
   }
 }
 

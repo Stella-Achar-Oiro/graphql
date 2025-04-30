@@ -6,6 +6,7 @@ class XPComponent {
     this.container = container;
     this.transactions = transactions;
     this.totalXP = totalXP;
+    this.activeModuleId = FormatUtils.getPreferredModule();
   }
 
   render() {
@@ -17,7 +18,7 @@ class XPComponent {
         <div class="xp-summary">
           <div class="xp-total">
             <h3>Total XP</h3>
-            <div class="xp-value">${FormatUtils.formatXPSize(this.totalXP)}</div>
+            <div class="xp-value">${FormatUtils.formatXPSize(this.totalXP, this.activeModuleId)}</div>
           </div>
           <div class="xp-chart">
             <canvas id="xp-progress-chart" width="400" height="100"></canvas>
@@ -51,7 +52,7 @@ class XPComponent {
             <div class="transaction-path">${this.getProjectName(transaction.path)}</div>
             <div class="transaction-date">${FormatUtils.formatDate(transaction.createdAt)}</div>
           </div>
-          <div class="transaction-amount">${FormatUtils.formatXPSize(transaction.amount)}</div>
+          <div class="transaction-amount">${FormatUtils.formatXPSize(transaction.amount, this.activeModuleId)}</div>
         </div>
       `).join('');
 

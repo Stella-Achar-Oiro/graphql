@@ -1,120 +1,114 @@
 # GraphQL Profile Dashboard
 
-A modern, dark-themed dashboard for visualizing your school progress using GraphQL. This application fetches and displays user information, XP progress, project grades, audit activities, and skills assessment.
+A modern, dark-themed dashboard for visualizing your school progress using GraphQL. This application fetches and displays user information, XP progress, project grades, audit activities, and module-specific statistics.
 
 ## Live Demo
 
 View the live dashboard at: [https://stella-achar-oiro.github.io/graphql/](https://stella-achar-oiro.github.io/graphql/)
 
+## Features
+
+- **Dynamic Module Selection** with module persistence across sessions
+- **Modern Dark/Light Theme** with automatic theme persistence
+- **Responsive Design** with mobile-optimized layout and charts
+- **Interactive SVG Visualizations** including:
+  - XP Progress Timeline
+  - Audit Activity Distribution
+  - Project Success Rate Charts
+- **Real-time Data Updates** with module-specific statistics
+- **Smart XP Display** using file size format (B, KB, MB)
+- **Advanced Filtering & Sorting** for transactions and projects
+- **Secure JWT Authentication** with token validation
+- **Mobile-First Sidebar** with collapsible navigation
+
 ## Project Structure
 
 ```
-/graphql-profile/
+/graphql/
   ├── index.html           # Main entry point
-  ├── assets/              # Static assets folder
-      ├── css/             # Stylesheets
-      │   ├── main.css     # Main styles with dark theme
-      ├── js/              # JavaScript files
-          ├── app.js       # Main application entry point
-          ├── services/    # Service modules
-          │   ├── auth.js  # Authentication service
-          │   └── api.js   # GraphQL API service
-          ├── components/  # UI components
-          │   ├── profile.js   # Profile component
-          │   ├── xp.js        # XP component
-          │   ├── grades.js    # Grades component
-          │   ├── audits.js    # Audits component
-          │   └── skills.js    # Skills component
-          └── utils/       # Utility functions
-              └── charts.js    # SVG chart generators
-  └── server.js            # Local development server
+  ├── css/                 # Stylesheets
+  │   ├── styles.css       # Main styles with theme support
+  │   └── sidebar.css      # Sidebar-specific styles
+  ├── js/                  # JavaScript modules
+  │   ├── app.js          # Application entry point
+  │   ├── router.js       # Client-side routing
+  │   ├── components/     # UI Components
+  │   │   ├── LoginComponent.js
+  │   │   ├── ModuleSelectionComponent.js
+  │   │   ├── ProfileComponent.js
+  │   │   ├── ProgressComponent.js
+  │   │   ├── StatisticsComponent.js
+  │   │   ├── TransactionsComponent.js
+  │   │   ├── UserInfoComponent.js
+  │   │   └── XPComponent.js
+  │   └── utils/          # Utility modules
+  │       ├── AuthManager.js
+  │       ├── FormatUtils.js
+  │       ├── GraphQLClient.js
+  │       └── queries.js
+  └── LICENSE             # MIT License
 ```
 
-## Features
+## Technical Features
 
-- **Modern Dark Theme UI** with light mode option
-- **Responsive Design** for all screen sizes
-- **Interactive Data Visualization** with SVG charts
-- **File Size Style XP Display** for innovative metrics presentation
-- **Privacy-focused** design with masked sensitive information
-- **Filtering and Sorting** for projects
-- **Skills Assessment** based on XP and project performance
-- **Secure Authentication** with JWT token management
+### Module Management
+- Dynamic module switching with state persistence
+- Parent/child module relationship handling
+- Automatic data reloading on module change
 
-## Implementation Steps
+### Theme System
+- CSS variable-based theming
+- Persistent theme preferences
+- Dark/light mode with smooth transitions
+- Chart colors that adapt to theme
 
-1. **Create Project Structure**
-   - Set up folders according to the structure above
-   - Create all the necessary files
+### Data Visualization
+- SVG-based charts with theme support
+- Interactive tooltips and hover states
+- Responsive chart scaling
+- Real-time data updates
 
-2. **Copy Files**
-   - Copy all the provided code into their respective files
-   - Make sure to keep the file structure consistent
+### Authentication
+- JWT-based authentication
+- Token validation and refresh
+- Secure credential handling
+- Persistent session management
 
-3. **Install Dependencies for Local Server**
-   - The project includes a simple Express server for local development
-   - Run `npm init -y` and then `npm install express http-proxy-middleware`
+### Performance
+- Request deduplication for GraphQL queries
+- Efficient DOM updates
+- Lazy-loaded components
+- Optimized mobile performance
 
-4. **Start Local Server**
-   - Run `node server.js` to start the local development server
-   - The application will be available at `http://localhost:3000`
-
-5. **Deploy to Hosting**
-   - For GitHub Pages: Push to a GitHub repository and enable GitHub Pages
-   - For Netlify: Link your repository and deploy from there
-   - For other hosting: Follow their respective deployment instructions
-
-## Authentication
-
-The application uses JWT for authentication with the GraphQL API. The login process:
-
-1. User enters credentials (username/email and password)
-2. Credentials are encoded in Base64 and sent to the authentication endpoint
-3. The JWT token is stored in localStorage
-4. The token is included in the Authorization header for all GraphQL requests
-
-## GraphQL Queries
-
-The application uses several GraphQL queries:
-
-- **User Info**: Basic profile information
-- **XP Data**: Experience points transactions
-- **Projects Data**: Project progress and grades
-- **Audits Data**: Audits given and received
-
-## Data Visualization
-
-The dashboard includes several SVG-based charts:
-
-1. **XP per Project**: Bar chart showing XP distribution across projects
-2. **Project Pass/Fail Ratio**: Pie chart showing success rate
-3. **XP Timeline**: Line chart showing XP growth over time
-4. **Audit Performance**: Bar chart comparing audits given and received
-
-## Customization Options
-
-1. **Theme Customization**
-   - Edit the CSS variables in `main.css` to change colors
-   - Light and dark themes use separate variable sets
-
-2. **Chart Styling**
-   - Charts are fully customizable in `charts.js`
-   - Colors automatically adapt to the selected theme
-
-3. **Adding New Features**
-   - The modular structure makes it easy to add new components
-   - Just create a new component file and import it in `app.js`
-
-## Browser Compatibility
-
-The application is compatible with all modern browsers:
+## Browser Support
 - Chrome (latest)
 - Firefox (latest)
 - Safari (latest)
 - Edge (latest)
 
-## Known Issues and Limitations
+## Development
 
-- SVG charts might not render correctly on very small screens
-- The application requires JavaScript to be enabled
-- Browser localStorage is used for token storage
+1. Clone the repository
+2. Open index.html in a modern browser
+3. No build step required - uses native ES modules
+
+## GraphQL API Integration
+
+The dashboard connects to a GraphQL API endpoint with the following queries:
+- User information
+- XP transactions
+- Project progress
+- Audit data
+- Module-specific results
+
+## Mobile Responsiveness
+
+The dashboard is fully responsive with:
+- Collapsible sidebar navigation
+- Mobile-optimized charts
+- Touch-friendly controls
+- Adaptive layouts for all screen sizes
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file for details

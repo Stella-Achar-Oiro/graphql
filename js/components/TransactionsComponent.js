@@ -7,53 +7,97 @@ class TransactionsComponent {
     this.transactions = transactions;
     this.itemsPerPage = 10;
     this.currentPage = 1;
+    this.filteredTransactions = [...transactions];
+    this.activeModuleId = FormatUtils.getPreferredModule();
   }
 
-  render() {
+  async render() {
     this.container.innerHTML = `
-      <div class="card transactions-card">
-        <div class="card-header">
-          <h2><i class="fas fa-list"></i> All XP Transactions</h2>
-        </div>
-        <div class="card-body">
-          <div class="transactions-filters">
-            <div class="search-box">
-              <input type="text" id="transaction-search" placeholder="Search transactions...">
+      <div class="dashboard-layout">
+        <main class="content-area">
+          <div id="module-selection-container"></div>
+          
+          <div class="card transactions-card">
+            <div class="card-header">
+              <h2><i class="fas fa-list"></i> All XP Transactions</h2>
+              <div class="card-actions">
+                <button class="btn-icon" id="refresh-transactions">
+                  <i class="fas fa-sync"></i>
+                </button>
+              </div>
             </div>
-            <div class="filter-box">
-              <select id="sort-transactions">
-                <option value="date-desc">Latest First</option>
-                <option value="date-asc">Oldest First</option>
-                <option value="xp-desc">Highest XP First</option>
-                <option value="xp-asc">Lowest XP First</option>
-              </select>
+            <div class="card-body">
+              <div class="transactions-filters">
+                <div class="search-group">
+                  <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="transaction-search" placeholder="Search transactions...">
+                  </div>
+                  <div class="search-tags" id="search-tags"></div>
+                </div>
+                <div class="filter-group">
+                  <div class="filter-box">
+                    <select id="sort-transactions">
+                      <option value="date-desc">Latest First</option>
+                      <option value="date-asc">Oldest First</option>
+                      <option value="xp-desc">Highest XP First</option>
+                      <option value="xp-asc">Lowest XP First</option>
+                    </select>
+                  </div>
+                  <div class="items-per-page">
+                    <select id="items-per-page">
+                      <option value="10">10 per page</option>
+                      <option value="20">20 per page</option>
+                      <option value="50">50 per page</option>
+                      <option value="100">100 per page</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="transactions-summary">
+                <div class="summary-item">
+                  <span class="summary-label">Total Transactions:</span>
+                  <span class="summary-value">${this.filteredTransactions.length}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Total XP:</span>
+                  <span class="summary-value">${this.formatTotalXP()}</span>
+                </div>
+              </div>
+
+              <div class="transactions-list">
+                ${this.renderTransactionsList()}
+              </div>
+
+              <div class="pagination-container">
+                <div class="pagination-info">
+                  Showing ${this.getStartIndex() + 1} to ${this.getEndIndex()} of ${this.filteredTransactions.length} entries
+                </div>
+                <div class="pagination">
+                  ${this.renderPagination()}
+                </div>
+              </div>
             </div>
           </div>
-
-          <div class="transactions-list">
-            ${this.renderTransactionsList()}
-          </div>
-
-          <div class="pagination">
-            ${this.renderPagination()}
-          </div>
-        </div>
+        </main>
       </div>
     `;
 
     this.addStyles();
+    await this.initializeModuleSelection();
     this.attachEventListeners();
   }
 
   renderTransactionsList() {
-    if (!this.transactions.length) {
+    if (!this.filteredTransactions.length) {
       return '<p class="no-data">No XP transactions found</p>';
     }
 
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
+    const startIndex = this.getStartIndex();
+    const endIndex = this.getEndIndex();
     
-    return this.transactions
+    return this.filteredTransactions
       .slice(startIndex, endIndex)
       .map(transaction => `
         <div class="transaction-item">
@@ -64,30 +108,20 @@ class TransactionsComponent {
               <span class="transaction-id">ID: ${transaction.id}</span>
             </div>
           </div>
-          <div class="transaction-amount">${FormatUtils.formatXPSize(transaction.amount)}</div>
+          <div class="transaction-amount">${FormatUtils.formatXPSize(transaction.amount, this.activeModuleId)}</div>
         </div>
       `).join('');
   }
 
   renderPagination() {
-    const totalPages = Math.ceil(this.transactions.length / this.itemsPerPage);
+    const totalPages = Math.ceil(this.filteredTransactions.length / this.itemsPerPage);
     if (totalPages <= 1) return '';
-
-    let pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(`
-        <button class="page-btn ${i === this.currentPage ? 'active' : ''}" 
-                data-page="${i}">
-          ${i}
-        </button>
-      `);
-    }
 
     return `
       <button class="page-btn" data-page="prev" ${this.currentPage === 1 ? 'disabled' : ''}>
         <i class="fas fa-chevron-left"></i>
       </button>
-      ${pages.join('')}
+      <span class="page-info">${this.currentPage} / ${totalPages}</span>
       <button class="page-btn" data-page="next" ${this.currentPage === totalPages ? 'disabled' : ''}>
         <i class="fas fa-chevron-right"></i>
       </button>
@@ -96,6 +130,33 @@ class TransactionsComponent {
 
   getProjectName(path) {
     return path.split('/').pop();
+  }
+
+  async initializeModuleSelection() {
+    const moduleSelectionContainer = document.getElementById('module-selection-container');
+    const ModuleSelectionComponent = (await import('./ModuleSelectionComponent.js')).default;
+    const moduleSelector = new ModuleSelectionComponent(
+      moduleSelectionContainer,
+      FormatUtils.getPreferredModule(),
+      this.handleModuleChange.bind(this)
+    );
+    moduleSelector.render();
+  }
+
+  async handleModuleChange(moduleId) {
+    try {
+      const { default: GraphQLClient } = await import('../utils/GraphQLClient.js');
+      const { getXPQuery } = await import('../utils/queries.js');
+      
+      this.activeModuleId = moduleId;
+      const data = await GraphQLClient.query(getXPQuery(moduleId));
+      this.transactions = data.transaction || [];
+      this.filteredTransactions = [...this.transactions];
+      this.currentPage = 1;
+      this.updateTransactionsList();
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+    }
   }
 
   attachEventListeners() {
@@ -116,13 +177,23 @@ class TransactionsComponent {
       });
     }
 
+    // Items per page functionality
+    const itemsPerPageSelect = document.getElementById('items-per-page');
+    if (itemsPerPageSelect) {
+      itemsPerPageSelect.addEventListener('change', (e) => {
+        this.itemsPerPage = parseInt(e.target.value);
+        this.currentPage = 1;
+        this.updateTransactionsList();
+      });
+    }
+
     // Pagination
     document.querySelectorAll('.page-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const page = e.target.dataset.page;
         if (page === 'prev' && this.currentPage > 1) {
           this.currentPage--;
-        } else if (page === 'next' && this.currentPage < Math.ceil(this.transactions.length / this.itemsPerPage)) {
+        } else if (page === 'next' && this.currentPage < Math.ceil(this.filteredTransactions.length / this.itemsPerPage)) {
           this.currentPage++;
         } else if (page !== 'prev' && page !== 'next') {
           this.currentPage = parseInt(page);
@@ -137,12 +208,13 @@ class TransactionsComponent {
       this.getProjectName(t.path).toLowerCase().includes(searchTerm) ||
       t.id.toString().includes(searchTerm)
     );
+    this.filteredTransactions = filtered;
     this.currentPage = 1;
-    this.updateTransactionsList(filtered);
+    this.updateTransactionsList();
   }
 
   sortTransactions(sortType) {
-    const sorted = [...this.transactions];
+    const sorted = [...this.filteredTransactions];
     switch (sortType) {
       case 'date-desc':
         sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -157,11 +229,12 @@ class TransactionsComponent {
         sorted.sort((a, b) => a.amount - b.amount);
         break;
     }
+    this.filteredTransactions = sorted;
     this.currentPage = 1;
-    this.updateTransactionsList(sorted);
+    this.updateTransactionsList();
   }
 
-  updateTransactionsList(transactions = this.transactions) {
+  updateTransactionsList() {
     const listContainer = this.container.querySelector('.transactions-list');
     if (listContainer) {
       listContainer.innerHTML = this.renderTransactionsList();
@@ -172,7 +245,42 @@ class TransactionsComponent {
       paginationContainer.innerHTML = this.renderPagination();
     }
     
+    const summaryContainer = this.container.querySelector('.transactions-summary');
+    if (summaryContainer) {
+      summaryContainer.innerHTML = `
+        <div class="summary-item">
+          <span class="summary-label">Total Transactions:</span>
+          <span class="summary-value">${this.filteredTransactions.length}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total XP:</span>
+          <span class="summary-value">${this.formatTotalXP()}</span>
+        </div>
+      `;
+    }
+
+    const paginationInfoContainer = this.container.querySelector('.pagination-info');
+    if (paginationInfoContainer) {
+      paginationInfoContainer.innerHTML = `
+        Showing ${this.getStartIndex() + 1} to ${this.getEndIndex()} of ${this.filteredTransactions.length} entries
+      `;
+    }
+
     this.attachEventListeners();
+  }
+
+  formatTotalXP() {
+    const total = this.filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    return FormatUtils.formatXPSize(total, this.activeModuleId);
+  }
+
+  getStartIndex() {
+    return (this.currentPage - 1) * this.itemsPerPage;
+  }
+
+  getEndIndex() {
+    const end = this.getStartIndex() + this.itemsPerPage;
+    return Math.min(end, this.filteredTransactions.length);
   }
 
   addStyles() {
@@ -180,37 +288,90 @@ class TransactionsComponent {
     style.textContent = `
       .transactions-filters {
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-between;
         margin-bottom: 20px;
         gap: 15px;
+      }
+
+      .search-group {
+        flex: 1;
+        min-width: 250px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
       }
 
       .search-box input {
         padding: 8px 12px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 4px;
-        width: 250px;
+        width: 100%;
+        min-width: 200px;
         font-size: 0.9rem;
       }
 
-      .filter-box select {
+      .filter-group {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .filter-box select,
+      .items-per-page select {
         padding: 8px 12px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 4px;
-        background-color: white;
+        min-width: 120px;
         font-size: 0.9rem;
+      }
+
+      .transactions-summary {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        gap: 15px;
+      }
+
+      .summary-item {
+        display: flex;
+        gap: 10px;
+        font-size: 0.9rem;
+        flex: 1;
+        min-width: 200px;
       }
 
       .transaction-item {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         padding: 15px;
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       }
 
+      .transaction-details {
+        flex: 1;
+        min-width: 0;
+        padding-right: 15px;
+      }
+
+      .transaction-path {
+        font-weight: 500;
+        margin-bottom: 5px;
+        word-break: break-word;
+      }
+
       .transaction-info {
         display: flex;
+        flex-wrap: wrap;
         gap: 15px;
         font-size: 0.8rem;
         opacity: 0.7;
@@ -220,41 +381,50 @@ class TransactionsComponent {
       .transaction-amount {
         font-weight: 600;
         color: var(--secondary-color);
+        white-space: nowrap;
+      }
+
+      .pagination-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        gap: 15px;
+      }
+
+      .pagination-info {
+        font-size: 0.9rem;
+        opacity: 0.7;
       }
 
       .pagination {
         display: flex;
-        justify-content: center;
-        gap: 5px;
-        margin-top: 20px;
+        gap: 10px;
+        align-items: center;
       }
 
-      .page-btn {
-        padding: 8px 12px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        background-color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
+      @media (max-width: 768px) {
+        .transactions-filters,
+        .filter-group {
+          flex-direction: column;
+        }
 
-      .page-btn.active {
-        background-color: var(--secondary-color);
-        color: white;
-        border-color: var(--secondary-color);
-      }
+        .search-box input,
+        .filter-box select,
+        .items-per-page select {
+          width: 100%;
+        }
 
-      .page-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
+        .pagination-container {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: center;
+        }
 
-      [data-theme="dark"] .search-box input,
-      [data-theme="dark"] .filter-box select,
-      [data-theme="dark"] .page-btn {
-        background-color: var(--card-bg);
-        color: var(--text-color);
-        border-color: rgba(255, 255, 255, 0.1);
+        .pagination {
+          justify-content: center;
+        }
       }
     `;
     document.head.appendChild(style);

@@ -125,6 +125,16 @@ class StatisticsComponent {
     svg.setAttribute('height', height);
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
+    // Add background rect for contrast
+    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bgRect.setAttribute('x', 0);
+    bgRect.setAttribute('y', 0);
+    bgRect.setAttribute('width', width);
+    bgRect.setAttribute('height', height);
+    bgRect.setAttribute('fill', 'var(--card-bg)');
+    bgRect.setAttribute('rx', '8');
+    svg.appendChild(bgRect);
+
     // Create group for the chart (applying margin)
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
@@ -172,7 +182,7 @@ class StatisticsComponent {
         const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tooltip.setAttribute('x', xScale(d.date) + 10);
         tooltip.setAttribute('y', yScale(d.cumulativeXP) - 10);
-        tooltip.setAttribute('fill', 'var(--text-color)');
+        tooltip.setAttribute('fill', 'var(--chart-text)');
         tooltip.textContent = `${FormatUtils.formatDate(d.date)}: ${FormatUtils.formatXPSize(d.cumulativeXP)}`;
         tooltip.setAttribute('id', 'tooltip');
         g.appendChild(tooltip);
@@ -195,7 +205,7 @@ class StatisticsComponent {
     // Update all text colors to use theme variable
     const allTexts = g.querySelectorAll('text');
     allTexts.forEach(text => {
-      text.setAttribute('fill', 'var(--text-color)');
+      text.setAttribute('fill', 'var(--chart-text)');
     });
 
     // Add X axis
@@ -216,6 +226,7 @@ class StatisticsComponent {
     xLabel.setAttribute('x', innerWidth / 2);
     xLabel.setAttribute('y', margin.bottom - 10);
     xLabel.setAttribute('text-anchor', 'middle');
+    xLabel.setAttribute('fill', 'var(--chart-text)');
     xLabel.textContent = 'Date';
     xAxis.appendChild(xLabel);
     
@@ -239,6 +250,7 @@ class StatisticsComponent {
     yLabel.setAttribute('x', -innerHeight / 2);
     yLabel.setAttribute('y', -margin.left + 20);
     yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('fill', 'var(--chart-text)');
     yLabel.textContent = 'Cumulative XP';
     yAxis.appendChild(yLabel);
     
@@ -262,6 +274,7 @@ class StatisticsComponent {
       tickLabel.setAttribute('text-anchor', 'end');
       tickLabel.textContent = FormatUtils.formatXPSize(tickValue);
       tickLabel.setAttribute('font-size', '10');
+      tickLabel.setAttribute('fill', 'var(--chart-text)');
       yAxis.appendChild(tickLabel);
     }
     
@@ -317,7 +330,19 @@ class StatisticsComponent {
 
     const container = document.getElementById('audit-chart-container');
     container.innerHTML = `
-      <div class="chart-title">Audit XP Distribution (Ratio: ${formattedRatio})</div>
+      <div class="chart-title">
+        Audit XP Distribution (Ratio: ${formattedRatio})
+        <div class="chart-subtitle">
+          <span class="xp-stat">
+            <span class="color-dot" style="background-color: var(--chart-audit-awarded)"></span>
+            XP Awarded: ${FormatUtils.formatXPSize(auditCounts.up)}
+          </span>
+          <span class="xp-stat">
+            <span class="color-dot" style="background-color: var(--chart-audit-received)"></span>
+            XP Received: ${FormatUtils.formatXPSize(auditCounts.down)}
+          </span>
+        </div>
+      </div>
       <div id="audit-pie-container"></div>
     `;
 
@@ -338,6 +363,16 @@ class StatisticsComponent {
     svg.setAttribute('height', height);
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
+    // Add a subtle shadow filter for better visibility
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    filter.setAttribute('id', 'shadow');
+    filter.innerHTML = `
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.3"/>
+    `;
+    defs.appendChild(filter);
+    svg.appendChild(defs);
+
     // Colors for pie slices - use theme variables
     const colors = data.map(item => item.color);
 
@@ -354,7 +389,7 @@ class StatisticsComponent {
       const x2 = centerX + radius * Math.cos(endAngle);
       const y2 = centerY + radius * Math.sin(endAngle);
       
-      // Create path for pie slice
+      // Create path for pie slice with shadow
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
       
@@ -368,56 +403,34 @@ class StatisticsComponent {
       
       path.setAttribute('d', d);
       path.setAttribute('fill', colors[index]);
-      path.setAttribute('stroke', 'white');
+      path.setAttribute('stroke', 'rgba(255, 255, 255, 0.1)');
       path.setAttribute('stroke-width', '2');
+      path.setAttribute('filter', 'url(#shadow)');
       
       svg.appendChild(path);
       
-      // Add label only if percent is a valid number
+      // Add label with improved visibility
       if (percent > 0) {
         const labelAngle = startAngle + (endAngle - startAngle) / 2;
         const labelRadius = radius * 0.7;
         const labelX = centerX + labelRadius * Math.cos(labelAngle);
         const labelY = centerY + labelRadius * Math.sin(labelAngle);
         
-        // Add label with formatted percentage
+        // Add percentage label with better contrast
         const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         label.setAttribute('x', labelX);
         label.setAttribute('y', labelY);
         label.setAttribute('text-anchor', 'middle');
         label.setAttribute('fill', 'white');
-        label.setAttribute('font-size', '12');
+        label.setAttribute('font-size', '14');
+        label.setAttribute('font-weight', '600');
+        label.setAttribute('filter', 'url(#shadow)');
         label.textContent = `${FormatUtils.formatPercentage(percent)}%`;
         
         svg.appendChild(label);
       }
 
       startAngle = endAngle;
-    });
-
-    // Add legend with formatted XP values
-    const legendY = height - 40;
-    data.forEach((item, index) => {
-      const legendX = 60 + index * (width / 2);
-      
-      // Color square
-      const square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      square.setAttribute('x', legendX - 15);
-      square.setAttribute('y', legendY);
-      square.setAttribute('width', 10);
-      square.setAttribute('height', 10);
-      square.setAttribute('fill', colors[index]);
-      
-      // Label text with formatted XP value
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', legendX);
-      text.setAttribute('y', legendY + 9);
-      text.setAttribute('font-size', '12');
-      text.setAttribute('fill', 'var(--text-color)');
-      text.textContent = `${item.type}: ${item.formattedValue}`;
-      
-      svg.appendChild(square);
-      svg.appendChild(text);
     });
 
     document.getElementById('audit-pie-container').appendChild(svg);
@@ -459,8 +472,8 @@ class StatisticsComponent {
       }
       
       const chartData = [
-        { status: 'PASS', count: passingProjects.length, color: 'var(--chart-success)', projects: passingProjects },
-        { status: 'FAIL', count: failingProjects.length, color: 'var(--chart-error)', projects: failingProjects }
+        { status: 'PASS', count: passingProjects.length, color: 'var(--chart-audit-awarded)', projects: passingProjects },
+        { status: 'FAIL', count: failingProjects.length, color: 'var(--chart-audit-received)', projects: failingProjects }
       ];
       
       this.createBarChart(chartData);
@@ -476,7 +489,7 @@ class StatisticsComponent {
     // SVG dimensions
     const width = 300;
     const height = 300;
-    const margin = { top: 30, right: 30, bottom: 60, left: 60 };
+    const margin = { top: 40, right: 30, bottom: 60, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
   
@@ -486,75 +499,145 @@ class StatisticsComponent {
     svg.setAttribute('height', height);
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   
+    // Add defs for gradients and filters
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    
+    // Add shadow filter
+    const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    filter.setAttribute('id', 'barShadow');
+    filter.innerHTML = `
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.2"/>
+    `;
+    defs.appendChild(filter);
+
     // Create group for the chart (applying margin)
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+    
+    // Add chart background for better contrast
+    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bgRect.setAttribute('x', -margin.left);
+    bgRect.setAttribute('y', -margin.top);
+    bgRect.setAttribute('width', width);
+    bgRect.setAttribute('height', height);
+    bgRect.setAttribute('fill', 'var(--card-bg)');
+    bgRect.setAttribute('rx', '8');
+    g.appendChild(bgRect);
+
+    svg.appendChild(defs);
     svg.appendChild(g);
   
-    // Find max count for scaling - add safety check
-    const maxCount = Math.max(...data.map(d => d.count), 1); // Ensure maxCount is at least 1
+    // Find max count for scaling
+    const maxCount = Math.max(...data.map(d => d.count), 1);
     
     // X scale (categorical)
-    const barWidth = innerWidth / data.length * 0.7;
-    const barSpacing = innerWidth / data.length * 0.3;
+    const barWidth = innerWidth / data.length * 0.6; // Make bars thinner
+    const barSpacing = innerWidth / data.length * 0.4; // Increase spacing
     
-    // Y scale (linear) with safety checks
+    // Y scale (linear)
     const yScale = count => {
-      // Make sure we don't return NaN
-      if (maxCount === 0 || isNaN(count)) {
-        return innerHeight;
-      }
       return innerHeight - (count / maxCount) * innerHeight;
     };
   
-    // Create bars
+    // Create bars with gradients
     data.forEach((d, i) => {
       const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const x = i * (barWidth + barSpacing);
-      
-      // Add safety checks
-      let y = yScale(d.count);
-      let height = innerHeight - y;
-      
-      // Ensure values are valid numbers
-      if (isNaN(y)) y = innerHeight;
-      if (isNaN(height)) height = 0;
-      
-      // Bar rectangle
+      const x = i * (barWidth + barSpacing) + barSpacing/2;
+      const y = yScale(d.count);
+      const height = innerHeight - y;
+
+      // Create gradient for each bar
+      const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+      gradient.setAttribute('id', `barGradient-${i}`);
+      gradient.innerHTML = `
+        <stop offset="0%" stop-color="${d.color}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${d.color}" stop-opacity="0.8"/>
+      `;
+      defs.appendChild(gradient);
+
+      // Bar rectangle with gradient and effects
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       rect.setAttribute('x', x);
       rect.setAttribute('y', y);
       rect.setAttribute('width', barWidth);
       rect.setAttribute('height', height);
-      rect.setAttribute('fill', d.color || '#69b3a2');
+      rect.setAttribute('fill', `url(#barGradient-${i})`);
+      rect.setAttribute('stroke', 'rgba(255, 255, 255, 0.1)');
+      rect.setAttribute('stroke-width', '1');
+      rect.setAttribute('rx', '6');
+      rect.setAttribute('filter', 'url(#barShadow)');
 
-      // Add tooltip functionality
+      // Add hover effect
+      rect.addEventListener('mouseover', () => {
+        rect.setAttribute('transform', 'scale(1.02)');
+        rect.style.transition = 'transform 0.2s ease';
+      });
+      rect.addEventListener('mouseout', () => {
+        rect.setAttribute('transform', 'scale(1)');
+      });
+      
+      // Count label with shadow
+      const countLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      countLabel.setAttribute('x', x + barWidth/2);
+      countLabel.setAttribute('y', y - 15);
+      countLabel.setAttribute('text-anchor', 'middle');
+      countLabel.setAttribute('fill', 'var(--chart-text)');
+      countLabel.setAttribute('font-size', '16');
+      countLabel.setAttribute('font-weight', '600');
+      countLabel.setAttribute('filter', 'url(#barShadow)');
+      countLabel.textContent = d.count;
+      
+      // Status label
+      const statusLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      statusLabel.setAttribute('x', x + barWidth/2);
+      statusLabel.setAttribute('y', innerHeight + 25);
+      statusLabel.setAttribute('text-anchor', 'middle');
+      statusLabel.setAttribute('fill', 'var(--chart-text)');
+      statusLabel.setAttribute('font-size', '14');
+      statusLabel.setAttribute('font-weight', '500');
+      statusLabel.textContent = d.status;
+      
+      barGroup.appendChild(rect);
+      barGroup.appendChild(countLabel);
+      barGroup.appendChild(statusLabel);
+      g.appendChild(barGroup);
+
+      // Add project names on hover if available
       if (d.projects && d.projects.length > 0) {
-        rect.addEventListener('mouseover', (e) => {
+        rect.addEventListener('mouseover', () => {
           const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-          tooltip.setAttribute('id', 'project-tooltip');
+          tooltip.setAttribute('id', 'tooltip');
           
           const tooltipBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-          tooltipBg.setAttribute('fill', 'white');
-          tooltipBg.setAttribute('stroke', '#ccc');
+          tooltipBg.setAttribute('fill', 'var(--chart-tooltip-bg)');
           tooltipBg.setAttribute('rx', '4');
-          tooltipBg.setAttribute('ry', '4');
+          tooltipBg.setAttribute('filter', 'url(#barShadow)');
           
-          const tooltipTexts = d.projects.map((project, index) => {
+          const tooltipTexts = d.projects.slice(0, 3).map((project, index) => {
             const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('x', x + barWidth + 10);
+            text.setAttribute('x', x + barWidth + 15);
             text.setAttribute('y', y + (index * 20) + 20);
             text.setAttribute('font-size', '12');
+            text.setAttribute('fill', 'var(--chart-tooltip-text)');
             text.textContent = project.name;
             return text;
           });
           
-          // Size the background rectangle based on content
-          const maxTextWidth = Math.max(...tooltipTexts.map(t => t.textContent.length)) * 7;
-          tooltipBg.setAttribute('x', x + barWidth + 5);
+          if (d.projects.length > 3) {
+            const moreText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            moreText.setAttribute('x', x + barWidth + 15);
+            moreText.setAttribute('y', y + 80);
+            moreText.setAttribute('font-size', '12');
+            moreText.setAttribute('fill', 'var(--chart-tooltip-text)');
+            moreText.textContent = `+${d.projects.length - 3} more`;
+            tooltipTexts.push(moreText);
+          }
+          
+          const maxWidth = Math.max(...tooltipTexts.map(t => t.textContent.length)) * 7;
+          tooltipBg.setAttribute('x', x + barWidth + 10);
           tooltipBg.setAttribute('y', y + 5);
-          tooltipBg.setAttribute('width', maxTextWidth + 10);
-          tooltipBg.setAttribute('height', (d.projects.length * 20) + 10);
+          tooltipBg.setAttribute('width', maxWidth + 10);
+          tooltipBg.setAttribute('height', Math.min(d.projects.length, 4) * 20 + 10);
           
           tooltip.appendChild(tooltipBg);
           tooltipTexts.forEach(text => tooltip.appendChild(text));
@@ -562,35 +645,13 @@ class StatisticsComponent {
         });
         
         rect.addEventListener('mouseout', () => {
-          const tooltip = document.getElementById('project-tooltip');
+          const tooltip = document.getElementById('tooltip');
           if (tooltip) tooltip.remove();
         });
       }
-      
-      barGroup.appendChild(rect);
-      
-      // Count label
-      const countLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      countLabel.setAttribute('x', x + barWidth / 2);
-      countLabel.setAttribute('y', Math.max(y - 10, 10)); // Ensure y is never below 10
-      countLabel.setAttribute('text-anchor', 'middle');
-      countLabel.textContent = d.count;
-      countLabel.setAttribute('font-size', '14');
-      barGroup.appendChild(countLabel);
-      
-      // Status label
-      const statusLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      statusLabel.setAttribute('x', x + barWidth / 2);
-      statusLabel.setAttribute('y', innerHeight + 20);
-      statusLabel.setAttribute('text-anchor', 'middle');
-      statusLabel.textContent = d.status;
-      statusLabel.setAttribute('font-size', '12');
-      barGroup.appendChild(statusLabel);
-      
-      g.appendChild(barGroup);
     });
   
-    // Add Y axis
+    // Add Y axis with improved styling
     const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     
     // Y axis line
@@ -599,57 +660,68 @@ class StatisticsComponent {
     yAxisLine.setAttribute('y1', 0);
     yAxisLine.setAttribute('x2', 0);
     yAxisLine.setAttribute('y2', innerHeight);
-    yAxisLine.setAttribute('stroke', '#000');
+    yAxisLine.setAttribute('stroke', 'var(--chart-line)');
+    yAxisLine.setAttribute('stroke-width', '1');
     yAxis.appendChild(yAxisLine);
     
-    // Y axis ticks
+    // Y axis ticks and labels
     const yTicks = 5;
     for (let i = 0; i <= yTicks; i++) {
       const tickValue = Math.round((maxCount / yTicks) * i);
       const y = yScale(tickValue);
       
+      // Grid line
+      const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      gridLine.setAttribute('x1', 0);
+      gridLine.setAttribute('y1', y);
+      gridLine.setAttribute('x2', innerWidth);
+      gridLine.setAttribute('y2', y);
+      gridLine.setAttribute('stroke', 'var(--chart-grid)');
+      gridLine.setAttribute('stroke-dasharray', '4,4');
+      g.appendChild(gridLine);
+      
+      // Tick
       const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       tick.setAttribute('x1', -5);
       tick.setAttribute('y1', y);
       tick.setAttribute('x2', 0);
       tick.setAttribute('y2', y);
-      tick.setAttribute('stroke', '#000');
+      tick.setAttribute('stroke', 'var(--chart-line)');
       yAxis.appendChild(tick);
       
-      const tickLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      tickLabel.setAttribute('x', -10);
-      tickLabel.setAttribute('y', y + 5);
-      tickLabel.setAttribute('text-anchor', 'end');
-      tickLabel.textContent = tickValue;
-      yAxis.appendChild(tickLabel);
+      // Label
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', -10);
+      label.setAttribute('y', y + 5);
+      label.setAttribute('text-anchor', 'end');
+      label.setAttribute('fill', 'var(--chart-text)');
+      label.setAttribute('font-size', '12');
+      label.textContent = tickValue;
+      yAxis.appendChild(label);
     }
     
     // Y axis label
     const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     yLabel.setAttribute('transform', 'rotate(-90)');
-    yLabel.setAttribute('x', -innerHeight / 2);
-    yLabel.setAttribute('y', -40);
+    yLabel.setAttribute('x', -innerHeight/2);
+    yLabel.setAttribute('y', -margin.left + 15);
     yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('fill', 'var(--chart-text)');
+    yLabel.setAttribute('font-size', '13');
+    yLabel.setAttribute('font-weight', '500');
     yLabel.textContent = 'Number of Projects';
     yAxis.appendChild(yLabel);
     
     g.appendChild(yAxis);
     
-    // X axis line
-    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    xAxis.setAttribute('x1', 0);
-    xAxis.setAttribute('y1', innerHeight);
-    xAxis.setAttribute('x2', innerWidth);
-    xAxis.setAttribute('y2', innerHeight);
-    xAxis.setAttribute('stroke', '#000');
-    g.appendChild(xAxis);
-    
-    // Chart title
+    // Add title
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    title.setAttribute('x', innerWidth / 2);
-    title.setAttribute('y', -10);
+    title.setAttribute('x', innerWidth/2);
+    title.setAttribute('y', -margin.top/2);
     title.setAttribute('text-anchor', 'middle');
-    title.setAttribute('font-weight', 'bold');
+    title.setAttribute('fill', 'var(--chart-text)');
+    title.setAttribute('font-size', '16');
+    title.setAttribute('font-weight', '600');
     title.textContent = 'Project Success Rate';
     g.appendChild(title);
   

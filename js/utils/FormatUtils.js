@@ -3,8 +3,8 @@ class FormatUtils {
   static formatXPSize(xpAmount) {
     const roundedAmount = Math.round(xpAmount);
     
-    if (roundedAmount < 1000) {
-      return `${roundedAmount} XP`;
+        if (roundedAmount < 1000) {
+      return `${roundedAmount} B`;
     } else if (roundedAmount < 1000000) {
       return `${(roundedAmount / 1000).toFixed(1)} KB`;
     } else {

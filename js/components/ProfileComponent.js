@@ -32,7 +32,7 @@ class ProfileComponent {
       <div class="dashboard-layout">
         <aside class="sidebar">
           <div class="sidebar-header">
-            <h2>GraphQL Profile</h2>
+            <h2>Dev Profile</h2>
           </div>
           <nav class="sidebar-nav">
             <ul>
@@ -117,19 +117,18 @@ class ProfileComponent {
       });
     });
     
-    // Theme toggle
+    // Theme toggle with arrow function
     const themeSwitch = document.getElementById('theme-switch');
-    themeSwitch.addEventListener('change', function() {
-      if (this.checked) {
+    themeSwitch.addEventListener('change', () => {
+      if (themeSwitch.checked) {
         document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem('theme', 'light');
       }
-      // Redraw charts when theme changes
       this.reloadCharts();
-    }.bind(this));
+    });
     
     // Check for saved theme preference
     const savedTheme = localStorage.getItem('theme');
@@ -283,7 +282,7 @@ class ProfileComponent {
         <div class="summary-icon"><i class="fas fa-code"></i></div>
         <div class="summary-info">
           <h3>Total XP</h3>
-          <p class="summary-value">${FormatUtils.formatXPSize(this.userData.totalXP)}</p>
+          <p class="summary-value">${FormatUtils.formatXPSize(this.userData.totalXP, this.activeModuleId)}</p>
         </div>
       </div>
       
