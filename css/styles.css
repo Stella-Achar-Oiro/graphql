@@ -1,67 +1,106 @@
 /* styles.css */
 :root {
-  --primary-color: #1a2b47;       /* Dark navy blue */
-  --primary-light: #2c3e5d;       /* Lighter navy blue */
-  --primary-dark: #0f1d36;        /* Darker navy blue */
-  --secondary-color: #00a8cc;     /* Teal accent color */
-  --accent-color: #f39c12;        /* Orange accent for highlights */
-  --background-color: #f8f9fa;    /* Light gray background */
-  --text-color: #333;             /* Dark text */
-  --card-bg: #fff;                /* White card background */
-  --sidebar-width: 240px;         /* Width of the sidebar */
-  --header-height: 60px;          /* Height of the top header */
-  --error-color: #e74c3c;         /* Error color */
-  --success-color: #2ecc71;       /* Success color */
-  --pending-color: #f1c40f;       /* Yellow for pending status */
-  --chart-audit-awarded: #2ecc71;    /* Green for XP awarded */
-  --chart-audit-received: #e74c3c;   /* Red for XP received */
+  /* Existing variables */
+  --primary-color: #1a2b47;
+  --primary-light: #2c3e5d;
+  --primary-dark: #0f1d36;
+  --secondary-color: #00a8cc;
+  --accent-color: #f39c12;
+  --background-color: #f8f9fa;
+  --text-color: #333;
+  --card-bg: #fff;
+  --sidebar-width: 240px;
+  --header-height: 60px;
+  --error-color: #e74c3c;
+  --success-color: #2ecc71;
+  --pending-color: #f1c40f;
+  
+  /* Chart-specific colors */
+  --chart-primary: #00a8cc;
+  --chart-secondary: #f39c12;
+  --chart-success: #2ecc71;
+  --chart-error: #e74c3c;
+  --chart-text: #333;
+  --chart-line: rgba(0, 0, 0, 0.1);
+  --chart-grid: rgba(0, 0, 0, 0.05);
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --chart-tooltip-text: #333;
+  --chart-audit-awarded: #2ecc71;
+  --chart-audit-received: #e74c3c;
+  --chart-hover: rgba(0, 168, 204, 0.1);
+  
+  /* Module selection colors */
+  --module-border: #e1e4e8;
+  --module-active: #8c52ff;
+  --module-active-bg: rgba(140, 82, 255, 0.1);
+  --module-hover: rgba(0, 0, 0, 0.05);
 }
 
-/* Dark mode colors */
 [data-theme="dark"] {
-  --primary-color: #1a2b47;       /* Keep the same navy blue */
-  --primary-light: #2c3e5d;       /* Keep lighter navy blue */
-  --primary-dark: #0f1d36;        /* Keep darker navy blue */
-  --secondary-color: #00a8cc;     /* Keep teal accent color */
-  --accent-color: #f39c12;        /* Keep orange accent */
-  --background-color: #12141d;    /* Dark background */
-  --text-color: #f1f1f1;          /* Light text */
-  --card-bg: #1e2439;             /* Dark card background */
-  --pending-color: #f39c12;       /* Darker yellow for dark theme */
-  --chart-text: #f1f1f1;          /* Chart text color for dark mode */
-  --chart-line: rgba(255, 255, 255, 0.2); /* Chart lines for dark mode */
-  --chart-primary: #00a8cc;       /* Primary chart color */
-  --chart-secondary: #f39c12;     /* Secondary chart color */
-  --chart-success: #2ecc71;       /* Success color for charts */
-  --chart-error: #e74c3c;         /* Error color for charts */
-  --chart-audit-awarded: #2ecc71;    /* Keep same green in dark mode */
-  --chart-audit-received: #e74c3c;   /* Keep same red in dark mode */
+  /* Existing dark theme variables */
+  --primary-color: #1a2b47;
+  --primary-light: #2c3e5d;
+  --primary-dark: #0f1d36;
+  --secondary-color: #00a8cc;
+  --accent-color: #f39c12;
+  --background-color: #12141d;
+  --text-color: #f1f1f1;
+  --card-bg: #1e2439;
+  --pending-color: #f39c12;
+  
+  /* Dark theme chart colors */
+  --chart-primary: #00a8cc;
+  --chart-secondary: #f39c12;
+  --chart-success: #2ecc71;
+  --chart-error: #e74c3c;
+  --chart-text: #f1f1f1;
+  --chart-line: rgba(255, 255, 255, 0.1);
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-tooltip-bg: rgba(30, 36, 57, 0.95);
+  --chart-tooltip-text: #f1f1f1;
+  --chart-audit-awarded: #2ecc71;
+  --chart-audit-received: #e74c3c;
+  --chart-hover: rgba(0, 168, 204, 0.2);
+  
+  /* Dark theme module selection colors */
+  --module-border: #2c3e5d;
+  --module-active: #8c52ff;
+  --module-active-bg: rgba(140, 82, 255, 0.15);
+  --module-hover: rgba(255, 255, 255, 0.05);
 }
 
-/* Add dark mode specific styles for charts */
-[data-theme="dark"] .chart-container {
-  background-color: var(--card-bg);
+/* Chart theme compatibility */
+.chart-container svg text {
+  fill: var(--chart-text);
 }
 
-[data-theme="dark"] .chart-title {
-  color: var(--text-color);
+.chart-container svg line,
+.chart-container svg path[stroke] {
+  stroke: var(--chart-line);
 }
 
-[data-theme="dark"] svg text {
-  fill: var(--text-color) !important;
-  color: var(--text-color) !important;
+.chart-container svg rect.chart-bg {
+  fill: var(--card-bg);
 }
 
-[data-theme="dark"] svg line,
-[data-theme="dark"] svg path[stroke="#000"] {
-  stroke: var(--chart-line) !important;
+.chart-tooltip {
+  background-color: var(--chart-tooltip-bg);
+  color: var(--chart-tooltip-text);
+  border: 1px solid var(--chart-line);
 }
 
-/* Improve text rendering in dark mode */
-[data-theme="dark"] body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+/* Module selection theme compatibility */
+.module-card {
+  border: 1px solid var(--module-border);
+}
+
+.module-card:hover {
+  background-color: var(--module-hover);
+}
+
+.module-card.active {
+  border-color: var(--module-active);
+  background-color: var(--module-active-bg);
 }
 
 * {

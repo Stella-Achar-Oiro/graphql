@@ -1,13 +1,14 @@
 // StatisticsComponent.js
 import FormatUtils from '../utils/FormatUtils.js';
 import GraphQLClient from '../utils/GraphQLClient.js';
-import { MODULE_75_RESULTS_QUERY } from '../utils/queries.js'; 
+import { getResultsQuery } from '../utils/queries.js'; 
 
 class StatisticsComponent {
-  constructor(container, xpData, auditData) {
+  constructor(container, xpData, auditData, moduleId) {
     this.container = container;
     this.xpData = xpData;
     this.auditData = auditData;
+    this.moduleId = moduleId;
   }
 
   render() {
@@ -428,7 +429,7 @@ class StatisticsComponent {
   }
 
   renderProjectSuccessRate() {
-    GraphQLClient.query(MODULE_75_RESULTS_QUERY)
+    GraphQLClient.query(getResultsQuery(this.moduleId))
     .then(data => {      
       // Skip if no data
       if (!data || !data.result || data.result.length === 0) {

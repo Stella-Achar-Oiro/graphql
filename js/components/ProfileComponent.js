@@ -7,18 +7,19 @@ import XPComponent from './XPComponent.js';
 import ProgressComponent from './ProgressComponent.js';
 import StatisticsComponent from './StatisticsComponent.js';
 import { 
-  USER_INFO_QUERY, 
-  MODULE_75_XP_QUERY, 
-  MODULE_75_PROGRESS_QUERY,
-  TOTAL_MODULE_75_XP_QUERY,
-  AUDIT_DATA_QUERY
+  USER_INFO_QUERY,
+  getXPQuery,
+  getProgressQuery,
+  getTotalXPQuery,
+  getAuditQuery
 } from '../utils/queries.js';
 
 class ProfileComponent {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.userData = null;
-    this.activeSection = 'user'; // Default active section
+    this.activeModuleId = 75; // Default module
+    this.activeSection = 'user';
   }
 
   async render() {
@@ -46,6 +47,8 @@ class ProfileComponent {
           </div>
         </aside>
         <main class="content-area">
+          <div id="module-selection-container"></div>
+          
           <div id="loading">Loading profile data...</div>
           
           <div id="dashboard-summary" style="display:none;" class="dashboard-grid">
@@ -98,24 +101,17 @@ class ProfileComponent {
   }
 
   attachEventListeners() {
-    // Logout button
+    // Existing event listeners
     document.getElementById('logout-btn').addEventListener('click', () => {
       AuthManager.removeToken();
       window.location.hash = '/login';
     });
     
-    // Sidebar navigation
     document.querySelectorAll('.sidebar-nav a').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // Remove active class from all links
         document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
-        
-        // Add active class to clicked link
         link.classList.add('active');
-        
-        // Get the target section
         const sectionId = link.getAttribute('data-section');
         this.showSection(sectionId);
       });
@@ -131,7 +127,9 @@ class ProfileComponent {
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem('theme', 'light');
       }
-    });
+      // Redraw charts when theme changes
+      this.reloadCharts();
+    }.bind(this));
     
     // Check for saved theme preference
     const savedTheme = localStorage.getItem('theme');
@@ -141,32 +139,37 @@ class ProfileComponent {
     }
   }
 
-  showSection(sectionId) {
-    // Hide all sections
-    document.querySelectorAll('.section').forEach(section => {
-      section.style.display = 'none';
-    });
-    
-    // Show the selected section
-    const section = document.getElementById(`${sectionId}-section`);
-    if (section) {
-      section.style.display = 'block';
+  async loadData() {
+    try {
+      // Load module selection component first
+      const moduleSelectionContainer = document.getElementById('module-selection-container');
+      const ModuleSelectionComponent = (await import('./ModuleSelectionComponent.js')).default;
+      const moduleSelector = new ModuleSelectionComponent(
+        moduleSelectionContainer, 
+        this.activeModuleId,
+        this.handleModuleChange.bind(this)
+      );
+      moduleSelector.render();
+
+      // Load data for active module
+      await this.loadModuleData();
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      document.getElementById('loading').textContent = 'Error loading data. Please try again.';
     }
-    
-    this.activeSection = sectionId;
   }
 
-  async loadData() {
+  async loadModuleData() {
     try {
       const [userInfo, xpData, progressData, totalXP, auditData] = await Promise.all([
         GraphQLClient.query(USER_INFO_QUERY),
-        GraphQLClient.query(MODULE_75_XP_QUERY),
-        GraphQLClient.query(MODULE_75_PROGRESS_QUERY),
-        GraphQLClient.query(TOTAL_MODULE_75_XP_QUERY),
-        GraphQLClient.query(AUDIT_DATA_QUERY)
+        GraphQLClient.query(getXPQuery(this.activeModuleId)),
+        GraphQLClient.query(getProgressQuery(this.activeModuleId)),
+        GraphQLClient.query(getTotalXPQuery(this.activeModuleId)),
+        GraphQLClient.query(getAuditQuery(this.activeModuleId))
       ]);
   
-      // Process XP data to calculate additional metrics
+      // Process XP data
       const transactions = xpData.transaction || [];
       const totalXPAmount = totalXP.transaction_aggregate?.aggregate?.sum?.amount || 0;
       
@@ -194,34 +197,69 @@ class ProfileComponent {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('dashboard-summary').style.display = 'grid';
     } catch (error) {
-      console.error('Failed to load profile data:', error);
-      document.getElementById('loading').textContent = 'Error loading profile data. Please try again.';
+      console.error('Failed to load module data:', error);
+      document.getElementById('loading').textContent = 'Error loading module data. Please try again.';
     }
+  }
+
+  async handleModuleChange(moduleId) {
+    this.activeModuleId = moduleId;
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('dashboard-summary').style.display = 'none';
+    
+    await this.loadModuleData();
+    this.renderSections();
+  }
+
+  reloadCharts() {
+    if (this.userData) {
+      const statisticsContainer = document.getElementById('statistics-container');
+      if (statisticsContainer) {
+        new StatisticsComponent(
+          statisticsContainer, 
+          this.userData.transactions, 
+          this.userData.auditData,
+          this.activeModuleId
+        ).render();
+      }
+    }
+  }
+
+  showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(section => {
+      section.style.display = 'none';
+    });
+    
+    const section = document.getElementById(`${sectionId}-section`);
+    if (section) {
+      section.style.display = 'block';
+    }
+    
+    this.activeSection = sectionId;
   }
 
   renderSections() {
     if (!this.userData) return;
 
-    // Render summary cards
     this.renderSummary();
 
-    // Render user info section
     const userInfoContainer = document.getElementById('user-info-container');
     new UserInfoComponent(userInfoContainer, this.userData.user).render();
 
-    // Render XP section
     const xpContainer = document.getElementById('xp-container');
     new XPComponent(xpContainer, this.userData.transactions, this.userData.totalXP).render();
 
-    // Render progress section
     const progressContainer = document.getElementById('progress-container');
     new ProgressComponent(progressContainer, this.userData.progress).render();
 
-    // Render statistics section
     const statisticsContainer = document.getElementById('statistics-container');
-    new StatisticsComponent(statisticsContainer, this.userData.transactions, this.userData.auditData).render();
+    new StatisticsComponent(
+      statisticsContainer, 
+      this.userData.transactions, 
+      this.userData.auditData,
+      this.activeModuleId
+    ).render();
 
-    // Show the active section
     this.showSection(this.activeSection);
   }
 
@@ -230,7 +268,6 @@ class ProfileComponent {
     
     const successRate = this.userData.projectStats.successRate.toFixed(1);
     
-    // Calculate total XP for audits
     const xpAwarded = this.userData.auditData
       .filter(a => a.type === "up")
       .reduce((sum, audit) => sum + (audit.amount || 0), 0);
@@ -239,7 +276,6 @@ class ProfileComponent {
       .filter(a => a.type === "down")
       .reduce((sum, audit) => sum + (audit.amount || 0), 0);
       
-    // Calculate ratio of XP awarded to XP received
     const auditRatio = xpReceived > 0 ? (xpAwarded / xpReceived).toFixed(1) : '0.0';
     
     summaryContainer.innerHTML = `

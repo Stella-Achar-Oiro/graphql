@@ -1,9 +1,9 @@
 // router.js
 import AuthManager from './utils/AuthManager.js';
+import { getXPQuery } from './utils/queries.js';
 
 class Router {
   constructor() {
-    // Use dynamic imports to avoid circular dependencies
     this.routes = {
       '/': this.redirectToDefaultRoute.bind(this),
       '/login': async () => {
@@ -17,10 +17,10 @@ class Router {
       '/transactions': async () => {
         const { default: TransactionsComponent } = await import('./components/TransactionsComponent.js');
         const { default: GraphQLClient } = await import('./utils/GraphQLClient.js');
-        const { MODULE_75_XP_QUERY } = await import('./utils/queries.js');
         
         try {
-          const data = await GraphQLClient.query(MODULE_75_XP_QUERY);
+          // Default to module 75 for transactions view
+          const data = await GraphQLClient.query(getXPQuery(75));
           const transactions = data.transaction || [];
           new TransactionsComponent(document.getElementById('app'), transactions).render();
         } catch (error) {

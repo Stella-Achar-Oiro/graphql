@@ -4,6 +4,7 @@ import AuthManager from './AuthManager.js';
 class GraphQLClient {
   constructor(endpoint) {
     this.endpoint = endpoint;
+    this.pendingRequests = new Map();
   }
 
   async query(query, variables = {}) {
@@ -13,12 +14,33 @@ class GraphQLClient {
       throw new Error('No authentication token found');
     }
     
-    // Validate token format
     if (!token.includes('.') || token.split('.').length !== 3) {
-      AuthManager.removeToken(); // Remove invalid token
+      AuthManager.removeToken();
       throw new Error('Invalid token format. Please log in again.');
     }
 
+    // Create a unique key for this request
+    const requestKey = JSON.stringify({ query, variables });
+    
+    // Check if there's already a pending request for this query
+    if (this.pendingRequests.has(requestKey)) {
+      return this.pendingRequests.get(requestKey);
+    }
+
+    try {
+      const requestPromise = this._executeQuery(query, variables, token);
+      this.pendingRequests.set(requestKey, requestPromise);
+      
+      const data = await requestPromise;
+      this.pendingRequests.delete(requestKey);
+      return data;
+    } catch (error) {
+      this.pendingRequests.delete(requestKey);
+      throw error;
+    }
+  }
+
+  async _executeQuery(query, variables, token) {
     try {
       const response = await fetch(this.endpoint, {
         method: 'POST',
@@ -39,17 +61,25 @@ class GraphQLClient {
       const data = await response.json();
       
       if (data.errors) {
-        // Check for authentication errors
         const authErrors = data.errors.some(error => 
-          error.message.includes('JWT') || 
-          error.message.includes('token') || 
-          error.message.includes('auth')
+          error.message.toLowerCase().includes('jwt') || 
+          error.message.toLowerCase().includes('token') || 
+          error.message.toLowerCase().includes('auth')
         );
         
         if (authErrors) {
-          // Remove invalid token and throw specific error
           AuthManager.removeToken();
           throw new Error('Authentication failed. Please log in again.');
+        }
+
+        // Check for module-specific errors
+        const moduleErrors = data.errors.some(error => 
+          error.message.toLowerCase().includes('module') ||
+          error.message.toLowerCase().includes('event')
+        );
+
+        if (moduleErrors) {
+          throw new Error('Unable to load module data. The module may not exist or you may not have access to it.');
         }
         
         throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);

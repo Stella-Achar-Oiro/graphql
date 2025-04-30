@@ -1,4 +1,4 @@
-// queries.js
+// queries.js - Updated with dynamic module support
 export const USER_INFO_QUERY = `
   {
     user {
@@ -8,12 +8,13 @@ export const USER_INFO_QUERY = `
   }
 `;
 
-// Updated XP query - using eventId instead of path filtering
-export const MODULE_75_XP_QUERY = `
+// Updated XP query with dynamic eventId
+export const getXPQuery = (moduleId) => `
    {
     transaction(
       where: {
-        type: {_eq: "xp"}
+        type: {_eq: "xp"},
+        eventId: {_eq: ${moduleId}}
       },
       order_by: {createdAt: desc}
     ) {
@@ -31,12 +32,12 @@ export const MODULE_75_XP_QUERY = `
   }
 `;
 
-// Fixed progress query for module 75 - removed nested event reference
-export const MODULE_75_PROGRESS_QUERY = `
+// Updated progress query with dynamic eventId
+export const getProgressQuery = (moduleId) => `
   {
     progress(
       where: {
-        eventId: {_eq: 75}
+        eventId: {_eq: ${moduleId}}
       },
       order_by: {createdAt: desc}
     ) {
@@ -53,12 +54,12 @@ export const MODULE_75_PROGRESS_QUERY = `
   }
 `;
 
-// Fixed results query for module 75 - removed nested event reference
-export const MODULE_75_RESULTS_QUERY = `
+// Updated results query with dynamic eventId
+export const getResultsQuery = (moduleId) => `
   {
     result(
       where: {
-        eventId: {_eq: 75}
+        eventId: {_eq: ${moduleId}}
       },
       order_by: {createdAt: desc}
     ) {
@@ -74,14 +75,14 @@ export const MODULE_75_RESULTS_QUERY = `
   }
 `;
 
-// Total XP query for module 75 (unchanged)
-export const TOTAL_MODULE_75_XP_QUERY = `
+// Updated Total XP query with dynamic eventId
+export const getTotalXPQuery = (moduleId) => `
   {
     transaction_aggregate(
       where: {
         _and: [
           { type: {_eq: "xp"} },
-          { eventId: {_eq: 75} }
+          { eventId: {_eq: ${moduleId}} }
         ]
       }
     ) {
@@ -94,14 +95,14 @@ export const TOTAL_MODULE_75_XP_QUERY = `
   }
 `;
 
-// Fixed audit query for module 75 - removed nested event reference
-export const AUDIT_DATA_QUERY = `
+// Updated audit query with dynamic eventId
+export const getAuditQuery = (moduleId) => `
   {
     transaction(
       where: {
         _and: [
           { type: {_in: ["up", "down"]} },
-          { eventId: {_eq: 75} }
+          { eventId: {_eq: ${moduleId}} }
         ]
       }
     ) {
